@@ -27,3 +27,8 @@ export const getRecentStockIns = async () => {
   const response = await axios.get("/api/recent-stock-ins");
   return response.data;
 };
+
+export const getRecentStockOuts = async () => {
+  const response = await axios.get("/api/recent-stock-outs");
+  return response.data;
+};

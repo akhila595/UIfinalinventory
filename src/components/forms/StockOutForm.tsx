@@ -2,85 +2,71 @@ import React, { useState } from "react";
 import { toast } from "react-hot-toast";
 import { stockOut } from "@/api/stockApi";
 
-interface StockOutData {
-  sku: string;
-  quantity: string;
-  saleDate: string;
-  remarks: string;
-  sellingPrice: string;
-  finalPrice: string;
+interface StockOutFormProps {
+  onSuccess?: () => void;
 }
 
-const StockOutForm: React.FC = () => {
-  const [data, setData] = useState<StockOutData>({
+const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
+  const [form, setForm] = useState({
     sku: "",
     quantity: "",
-    saleDate: new Date().toISOString().slice(0, 16),
     remarks: "",
     sellingPrice: "",
     finalPrice: "",
   });
 
-  const [message, setMessage] = useState<string>(""); // ✅ to display backend message
-  const [isError, setIsError] = useState<boolean>(false); // ✅ to style message color
+  const [submitting, setSubmitting] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setData((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const payload = {
-      sku: data.sku.trim(),
-      quantity: Number(data.quantity),
-      saleDate: data.saleDate,
-      remarks: data.remarks.trim(),
-      sellingPrice: Number(data.sellingPrice),
-      finalPrice: Number(data.finalPrice),
-    };
+    if (!form.sku || !form.quantity) {
+      toast.error("Please fill in all required fields.");
+      return;
+    }
 
+    setSubmitting(true);
     try {
-      const response = await stockOut(payload);
+      const payload = {
+        sku: form.sku.trim(),
+        quantity: Number(form.quantity),
+        saleDate: new Date().toISOString(),
+        remarks: form.remarks,
+        sellingPrice: form.sellingPrice ? Number(form.sellingPrice) : null,
+        finalPrice: form.finalPrice ? Number(form.finalPrice) : null,
+      };
 
-      // ✅ Assume backend returns message as plain string
-      const messageText =
-        typeof response === "string"
-          ? response
-          : response?.message || "Stock out processed.";
+      await stockOut(payload);
+      toast.success("Stock-out recorded successfully!");
+      onSuccess?.();
 
-      setMessage(messageText);
-      setIsError(messageText.startsWith("❌")); // color based on backend symbol
-
-      toast.success(messageText);
-
-      // ✅ Reset form only if successful
-      if (!messageText.startsWith("❌")) {
-        setData({
-          sku: "",
-          quantity: "",
-          saleDate: new Date().toISOString().slice(0, 16),
-          remarks: "",
-          sellingPrice: "",
-          finalPrice: "",
-        });
-      }
+      setForm({
+        sku: "",
+        quantity: "",
+        remarks: "",
+        sellingPrice: "",
+        finalPrice: "",
+      });
     } catch (err: any) {
-      console.error(err);
-      const errorMsg = err?.response?.data || "Failed to process stock out.";
-      setMessage(errorMsg);
-      setIsError(true);
-      toast.error(errorMsg);
+      toast.error(
+        err?.response?.data?.message || err?.message || "Failed to record stock-out."
+      );
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
-    <div className="relative max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md mt-8">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">
-        Stock Out Form
+    <div className="p-8">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+        Record Stock Out
       </h2>
 
       <form
@@ -89,107 +75,91 @@ const StockOutForm: React.FC = () => {
       >
         {/* SKU */}
         <div>
-          <label className="block font-medium mb-1">SKU</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            SKU <span className="text-red-500">*</span>
+          </label>
           <input
-            type="text"
             name="sku"
-            value={data.sku}
+            value={form.sku}
             onChange={handleChange}
+            placeholder="Enter SKU"
+            className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
             required
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
           />
         </div>
 
         {/* Quantity */}
         <div>
-          <label className="block font-medium mb-1">Quantity</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Quantity <span className="text-red-500">*</span>
+          </label>
           <input
-            type="number"
             name="quantity"
-            value={data.quantity}
+            value={form.quantity}
             onChange={handleChange}
+            type="number"
+            min={1}
+            className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
             required
-            min="1"
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
-          />
-        </div>
-
-        {/* Sale Date */}
-        <div>
-          <label className="block font-medium mb-1">Sale Date</label>
-          <input
-            type="datetime-local"
-            name="saleDate"
-            value={data.saleDate}
-            onChange={handleChange}
-            required
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
           />
         </div>
 
         {/* Selling Price */}
         <div>
-          <label className="block font-medium mb-1">Selling Price</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Selling Price (per unit)
+          </label>
           <input
-            type="number"
             name="sellingPrice"
-            value={data.sellingPrice}
+            value={form.sellingPrice}
             onChange={handleChange}
-            required
-            min="0"
+            type="number"
             step="0.01"
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
+            className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
           />
         </div>
 
         {/* Final Price */}
         <div>
-          <label className="block font-medium mb-1">Final Price</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Final Price (per unit)
+          </label>
           <input
-            type="number"
             name="finalPrice"
-            value={data.finalPrice}
+            value={form.finalPrice}
             onChange={handleChange}
-            required
-            min="0"
+            type="number"
             step="0.01"
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
+            className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
           />
         </div>
 
         {/* Remarks */}
         <div className="md:col-span-2">
-          <label className="block font-medium mb-1">Remarks</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Reason / Remarks
+          </label>
           <textarea
             name="remarks"
-            value={data.remarks}
+            value={form.remarks}
             onChange={handleChange}
+            className="border rounded-md px-3 py-2 w-full resize-none focus:ring-2 focus:ring-indigo-500 outline-none"
             rows={3}
-            className="w-full border rounded-md px-4 py-2 bg-green-50 focus:bg-green-100 focus:outline-none"
+            placeholder="Reason for stock-out (sale, damage, return, etc.)"
           />
         </div>
 
-        {/* Submit Button */}
-        <div className="col-span-2 text-center mt-6">
+        {/* Submit */}
+        <div className="md:col-span-2 flex justify-end">
           <button
             type="submit"
-            className="bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 transition-all"
+            disabled={submitting}
+            className="bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 disabled:opacity-60 transition font-medium shadow"
           >
-            Process Stock Out
+            {submitting ? "Saving..." : "Record Stock Out"}
           </button>
         </div>
       </form>
-
-      {/* ✅ Message Display Section */}
-      {message && (
-        <div
-          className={`mt-6 text-center text-lg font-medium ${
-            isError ? "text-red-600" : "text-green-600"
-          }`}
-        >
-          {message}
-        </div>
-      )}
     </div>
   );
 };

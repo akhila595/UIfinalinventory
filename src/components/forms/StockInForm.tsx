@@ -63,10 +63,32 @@ const StockInForm: React.FC = () => {
     }
   };
 
+  // ✅ FIXED HANDLECHANGE to convert numeric dropdown values to number
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    const numericFields = ["categoryId", "brandId", "clothTypeId", "colorId", "sizeId"];
+    const parsedValue = numericFields.includes(name) ? Number(value) : value;
+
+    const updatedForm = { ...formData, [name]: parsedValue };
+
+    // ✅ SKU auto-generation
+    const categoryName =
+      categories.find((c) => c.categoryId === updatedForm.categoryId)?.categoryName || "";
+    const colorName =
+      colors.find((c) => c.id === updatedForm.colorId)?.color || "";
+    const sizeName =
+      sizes.find((s) => s.id === updatedForm.sizeId)?.size || "";
+    const designCode = updatedForm.designCode || "";
+
+    updatedForm.sku =
+      categoryName && designCode
+        ? `${categoryName}-${designCode}-${colorName}-${sizeName}`.replace(/\s+/g, "")
+        : "";
+
+    setFormData(updatedForm);
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,7 +103,10 @@ const StockInForm: React.FC = () => {
 
     try {
       const payload = new FormData();
-      payload.append("data", new Blob([JSON.stringify(formData)], { type: "application/json" }));
+      payload.append(
+        "data",
+        new Blob([JSON.stringify(formData)], { type: "application/json" })
+      );
       if (image) payload.append("image", image);
 
       await stockIn(payload);
@@ -215,7 +240,6 @@ const StockInForm: React.FC = () => {
         { label: "Product Name", name: "productName" },
         { label: "Design Code", name: "designCode" },
         { label: "Pattern", name: "pattern" },
-        { label: "SKU", name: "sku" },
         { label: "Quantity", name: "quantity", type: "number" },
         { label: "Base Price", name: "basePrice", type: "number" },
         { label: "Tax per Unit", name: "taxPerUnit", type: "number" },
@@ -233,6 +257,18 @@ const StockInForm: React.FC = () => {
           />
         </div>
       ))}
+
+      {/* ✅ Auto-populated SKU Field */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-1">SKU (Auto Generated)</label>
+        <input
+          type="text"
+          name="sku"
+          value={formData.sku}
+          readOnly
+          className="w-full border border-gray-300 rounded-lg p-2 bg-gray-100 cursor-not-allowed"
+        />
+      </div>
 
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-1">Purchase Date</label>

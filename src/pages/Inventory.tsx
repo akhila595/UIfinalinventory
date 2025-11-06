@@ -21,6 +21,7 @@ const { Option } = Select;
 const InventoryPage: React.FC = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]);
+  const [patterns, setPatterns] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductDTO | null>(null);
@@ -38,6 +39,17 @@ const InventoryPage: React.FC = () => {
       const res = await getAllProducts();
       setProducts(res.data);
       setFilteredProducts(res.data);
+
+      // ✅ Type-safe unique pattern extraction
+      const uniquePatterns = Array.from(
+        new Set(
+          res.data.map((p: ProductDTO): string =>
+            (p.pattern ?? "").toString().trim()
+          )
+        )
+      ).filter((p): p is string => p !== "");
+
+      setPatterns(uniquePatterns);
     } catch {
       message.error("Failed to fetch products");
     }
@@ -48,7 +60,6 @@ const InventoryPage: React.FC = () => {
     fetchProducts();
   }, []);
 
-  // Filter + Search logic
   useEffect(() => {
     let filtered = products;
     if (searchTerm) {
@@ -165,7 +176,7 @@ const InventoryPage: React.FC = () => {
       transition={{ duration: 0.4 }}
       className="p-8 bg-gradient-to-br from-indigo-50 to-white min-h-screen"
     >
-      {/* Header Section */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-indigo-800 tracking-tight">
           Inventory Management
@@ -196,21 +207,41 @@ const InventoryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Filters */}
+      {/* ✅ Summary Cards */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
+      >
+        {[
+          { title: "Total Products", value: filteredProducts.length },
+          { title: "Unique Patterns", value: patterns.length },
+        ].map((card, index) => (
+          <motion.div
+            key={index}
+            whileHover={{ scale: 1.03 }}
+            transition={{ type: "spring", stiffness: 200 }}
+            className="bg-white shadow-md border border-indigo-100 rounded-xl p-5"
+          >
+            <p className="text-sm text-gray-500">{card.title}</p>
+            <p className="text-2xl font-bold text-indigo-700">{card.value}</p>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* ✅ Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-4">
-        {/* Search Bar */}
-        <div className="flex items-center w-full sm:w-1/2 bg-white shadow-sm border border-indigo-100 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-indigo-500 transition">
+        <div className="flex items-center w-full sm:w-1/2 bg-white shadow-sm border border-indigo-100 rounded-lg px-3 py-2">
           <Search size={18} className="text-gray-500 mr-2" />
           <Input
-            placeholder="Search by product name or design code..."
+            placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             bordered={false}
-            className="text-gray-700"
           />
         </div>
 
-        {/* Category Filter */}
         <div className="flex items-center gap-2">
           <Filter size={18} className="text-indigo-600" />
           <Select
@@ -219,9 +250,11 @@ const InventoryPage: React.FC = () => {
             className="w-48"
           >
             <Option value="All">All Patterns</Option>
-            <Option value="Floral">Floral</Option>
-            <Option value="Geometric">Geometric</Option>
-            <Option value="Abstract">Abstract</Option>
+            {patterns.map((pattern, index) => (
+              <Option key={index} value={pattern}>
+                {pattern}
+              </Option>
+            ))}
           </Select>
         </div>
       </div>
@@ -234,7 +267,6 @@ const InventoryPage: React.FC = () => {
           loading={loading}
           rowKey="id"
           pagination={{ pageSize: 8 }}
-          className="custom-table"
         />
       </div>
 
@@ -244,56 +276,26 @@ const InventoryPage: React.FC = () => {
         open={isModalOpen}
         onOk={handleSave}
         onCancel={() => setIsModalOpen(false)}
-        okText="Save"
-        cancelText="Cancel"
       >
         <Input
           placeholder="Product Name"
           value={formData.productName}
-          onChange={(e) =>
-            setFormData({ ...formData, productName: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
           style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Design Code"
           value={formData.designCode}
-          onChange={(e) =>
-            setFormData({ ...formData, designCode: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, designCode: e.target.value })}
           style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Pattern"
           value={formData.pattern}
-          onChange={(e) =>
-            setFormData({ ...formData, pattern: e.target.value })
-          }
+          onChange={(e) => setFormData({ ...formData, pattern: e.target.value })}
           style={{ marginBottom: 10 }}
         />
       </Modal>
-
-      {/* Custom Table Styling */}
-      <style>{`
-        .custom-table .ant-table-thead > tr > th {
-          background: linear-gradient(to right, #4f46e5, #6366f1);
-          color: #fff;
-          font-weight: 600;
-          text-align: center;
-          border: none;
-        }
-        .custom-table .ant-table-tbody > tr > td {
-          border-bottom: 1px solid #e5e7eb;
-        }
-        .custom-table .ant-table-tbody > tr:hover > td {
-          background-color: #eef2ff;
-          transition: background 0.3s;
-        }
-        .ant-table {
-          border-radius: 1rem;
-          overflow: hidden;
-        }
-      `}</style>
     </motion.div>
   );
 };
