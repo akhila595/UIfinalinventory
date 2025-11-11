@@ -1,20 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Table, message } from "antd";
 import { Search, FileDown } from "lucide-react";
-import { getCategories } from "@/api/masterDataApi";
+import { getClothTypes } from "@/api/masterDataApi";
 
-const CategoryReport: React.FC = () => {
-  const [categories, setCategories] = useState<any[]>([]);
+const ClothTypesReport: React.FC = () => {
+  const [types, setTypes] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [search, setSearch] = useState("");
 
   const fetchData = async () => {
     try {
-      const res = await getCategories();
-      setCategories(res);
+      const res = await getClothTypes();
+      setTypes(res);
       setFiltered(res);
     } catch {
-      message.error("Failed to fetch categories");
+      message.error("Failed to fetch cloth types");
     }
   };
 
@@ -24,32 +24,32 @@ const CategoryReport: React.FC = () => {
 
   useEffect(() => {
     setFiltered(
-      categories.filter((c) =>
-        c.categoryName.toLowerCase().includes(search.toLowerCase())
+      types.filter((t) =>
+        t.clothType.toLowerCase().includes(search.toLowerCase())
       )
     );
-  }, [search, categories]);
+  }, [search, types]);
 
   const exportCSV = () => {
-    const rows = [["Category Name"], ...filtered.map((c) => [c.categoryName])];
+    const rows = [["Cloth Type"], ...filtered.map((t) => [t.clothType])];
     const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], {
       type: "text/csv",
     });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "categories_report.csv";
+    a.download = "cloth_types_report.csv";
     a.click();
   };
 
   return (
     <div>
-      {/* Actions */}
+      {/* Search + Export */}
       <div className="flex justify-between mb-4">
         <div className="flex items-center bg-white border rounded-lg px-3 py-1 shadow-sm">
-          <Search className="text-gray-500" size={18} />
+          <Search size={18} className="text-gray-500" />
           <input
-            placeholder="Search categories..."
+            placeholder="Search cloth types..."
             className="outline-none px-2"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -67,12 +67,12 @@ const CategoryReport: React.FC = () => {
       {/* Table */}
       <Table
         dataSource={filtered}
-        rowKey="categoryId"
-        columns={[{ title: "Category Name", dataIndex: "categoryName" }]}
+        rowKey="id"
+        columns={[{ title: "Cloth Type", dataIndex: "clothType" }]}
         pagination={{ pageSize: 10 }}
       />
     </div>
   );
 };
 
-export default CategoryReport;
+export default ClothTypesReport;

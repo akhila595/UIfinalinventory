@@ -14,3 +14,7 @@ export const createColor = async (data: any) => (await axios.post("/api/colors/c
 
 export const getSizes = async () => (await axios.get("/api/sizes")).data;
 export const createSize = async (data: any) => (await axios.post("/api/sizes/create", data)).data;
+
+export const getSuppliers = async () => {
+  return (await axios.get("/api/suppliers")).data;
+};

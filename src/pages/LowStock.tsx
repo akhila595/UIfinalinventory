@@ -26,19 +26,22 @@ const LowStockPage: React.FC = () => {
 
       const salesMap: Record<string, number> = {};
       monthlyData.productSales.forEach((item: any) => {
-        salesMap[item.productName] = (salesMap[item.productName] || 0) + item.quantity;
+        salesMap[item.productName] =
+          (salesMap[item.productName] || 0) + item.quantity;
       });
 
       const combined = lowStockItems.map((item) => {
         const monthlySales = salesMap[item.productName] || 0;
-        const velocity = monthlySales / 30;
-        const score = velocity / (item.stockQty + 1);
+        const dailySales = monthlySales / 30 || 0;
+
+        let daysRemaining = Infinity;
+        if (dailySales > 0) daysRemaining = item.stockQty / dailySales;
 
         let priority = "Low";
-        if (score > 1.5) priority = "High";
-        else if (score >= 0.5) priority = "Medium";
+        if (daysRemaining <= 7) priority = "High";
+        else if (daysRemaining <= 15) priority = "Medium";
 
-        return { ...item, monthlySales, velocity, priority };
+        return { ...item, monthlySales, daysRemaining, priority };
       });
 
       setEnrichedItems(combined);
@@ -59,7 +62,6 @@ const LowStockPage: React.FC = () => {
     item.productName?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Summary counts
   const totalLow = filteredItems.length;
   const outOfStock = filteredItems.filter((i) => i.stockQty === 0).length;
   const veryLow = filteredItems.filter((i) => i.stockQty > 0 && i.stockQty <= 3).length;
@@ -85,8 +87,6 @@ const LowStockPage: React.FC = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-
-      {/* Header */}
       <div className="mb-4">
         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
           <TriangleAlert className="text-indigo-600" />
@@ -94,11 +94,10 @@ const LowStockPage: React.FC = () => {
         </h1>
         <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
           <Info size={16} className="text-indigo-500" />
-          Priority is calculated based on <strong>last month’s sales</strong>.
+          Priority is based on <strong>how soon the stock will run out</strong> based on recent sales.
         </p>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <div className="bg-white shadow-md border rounded-xl p-4">
           <p className="text-sm text-gray-500">Total Low Stock Items</p>
@@ -116,7 +115,6 @@ const LowStockPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex items-center bg-white border rounded-lg px-4 py-2 mb-6 shadow-sm w-full md:w-1/2">
         <Search className="text-gray-500" size={20} />
         <input
@@ -128,7 +126,6 @@ const LowStockPage: React.FC = () => {
         />
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto bg-white rounded-lg shadow-md border">
         <table className="w-full border-collapse">
           <thead className="bg-gradient-to-r from-indigo-600 to-violet-500 text-white">
@@ -147,9 +144,7 @@ const LowStockPage: React.FC = () => {
               filteredItems.map((item, i) => (
                 <tr
                   key={i}
-                  className={`border-b ${
-                    i % 2 === 0 ? "bg-gray-50" : "bg-white"
-                  } hover:bg-indigo-50 transition`}
+                  className={`border-b ${i % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-indigo-50 transition`}
                 >
                   <td className="p-3">{i + 1}</td>
                   <td className="p-3 font-medium text-gray-800">{item.productName}</td>

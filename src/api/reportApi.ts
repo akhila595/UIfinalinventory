@@ -26,3 +26,14 @@ export const getWeeklyReport = async (startDate: string, endDate: string) =>
 
 export const getYearlyReport = async (year: number) =>
   (await axios.get(`/api/reports/yearly`, { params: { year } })).data;
+
+export const getSupplierPurchaseHistory = async (
+  supplierId: number,
+  startDate: string,
+  endDate: string
+) =>
+  (
+    await axios.get(`/api/reports/supplier/${supplierId}`, {
+      params: { startDate, endDate },
+    })
+  ).data;
