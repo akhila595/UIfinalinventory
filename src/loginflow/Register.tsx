@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 export default function Register({ onBack }: { onBack: () => void }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"USER" | "ADMIN">("USER"); // Corrected role type
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,26 +20,23 @@ export default function Register({ onBack }: { onBack: () => void }) {
     setLoading(true);
 
     try {
-      // Adjust based on your backend requirements
-      const response = await registerUser({ name, email, password, role });
+      const response = await registerUser({ name, email, password });
 
-      const { token, name: returnedName, role: returnedRole } = response.data;
+      const { token, name: returnedName, role: returnedRole } = response.data || {};
 
-      // If backend returns a token, auto-login
       if (token) {
         localStorage.setItem("authToken", token);
-        localStorage.setItem("userData", JSON.stringify({ name: returnedName, role: returnedRole }));
+        localStorage.setItem(
+          "userData",
+          JSON.stringify({ name: returnedName, role: returnedRole })
+        );
         navigate("/app");
       } else {
-        // If no token, fallback to showing success and let user go back to login
-        setSuccess(response.data.message || "✅ Registration successful! You can now log in.");
+        setSuccess(response.data?.message || "✅ Registration successful!");
       }
     } catch (err: any) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("❌ Something went wrong. Please try again.");
-      }
+      if (err.response?.data?.message) setError(err.response.data.message);
+      else setError("❌ Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -51,26 +47,22 @@ export default function Register({ onBack }: { onBack: () => void }) {
       className="relative flex justify-center items-center h-screen bg-cover bg-center bg-no-repeat"
       style={{ backgroundImage: "url('/images/backgroundimage1.png')" }}
     >
-      {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/60 z-0"></div>
 
-      {/* Top Left Logo */}
       <div className="absolute top-6 left-6 flex items-center space-x-3 z-10">
         <img src="/images/logo.png" alt="Logo" className="h-12 w-12 object-contain rounded-full shadow-md" />
         <span className="text-white text-2xl font-bold drop-shadow-lg select-none">MyProduct</span>
       </div>
 
-      {/* Product Text */}
       <div className="absolute left-6 bottom-12 max-w-sm text-white drop-shadow-lg z-10 px-4 sm:px-0">
         <h2 className="text-3xl font-extrabold mb-2 bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent">
           Join the Future of Inventory
         </h2>
         <p className="text-lg leading-relaxed text-gray-200">
-          Create your free account to track, manage, and analyze your products with smart dashboards and instant insights.
+          Create your free account to track and analyze your products.
         </p>
       </div>
 
-      {/* Register Card */}
       <motion.div
         initial={{ opacity: 0, y: -40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -129,19 +121,6 @@ export default function Register({ onBack }: { onBack: () => void }) {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-          </div>
-
-          {/* Optional role selection */}
-          <div>
-            <label className="block text-gray-200 font-semibold mb-1 select-none">Role</label>
-            <select
-              className="w-full p-3 rounded-lg border border-gray-300 bg-white/30 text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-400 backdrop-blur-sm transition"
-              value={role}
-              onChange={(e) => setRole(e.target.value as "USER" | "ADMIN")} // Type assertion
-            >
-              <option value="USER">User</option>
-              <option value="ADMIN">Admin</option>
-            </select>
           </div>
 
           <button

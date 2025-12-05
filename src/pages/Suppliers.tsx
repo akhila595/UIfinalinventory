@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Search, UserPlus, RefreshCcw, Trash2, Pencil, History } from "lucide-react";
+import { Search, UserPlus, RefreshCcw, Trash2, Pencil, History, Lock } from "lucide-react";
 import { Table, message } from "antd";
 import SupplierFormModal from "@/components/forms/SupplierFormModal";
 import {
@@ -34,6 +34,30 @@ const SupplierPage: React.FC = () => {
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // ✅ Load permissions
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const permissions: string[] = userData.permissions || [];
+
+  const hasPermission = (perm: string) => permissions.includes(perm);
+
+  const canView = hasPermission("SUPPLIER_VIEW");
+  const canCreate = hasPermission("SUPPLIER_CREATE");
+  const canEdit = hasPermission("SUPPLIER_EDIT");
+  const canDelete = hasPermission("SUPPLIER_DELETE");
+
+  // ❌ Block access if no view permission
+  if (!canView) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-gray-600">
+        <Lock size={50} className="text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-gray-500">
+          You do not have permission to view this page.
+        </p>
+      </div>
+    );
+  }
 
   const fetchData = async () => {
     setLoading(true);
@@ -79,26 +103,39 @@ const SupplierPage: React.FC = () => {
   const handleSave = async () => {
     try {
       if (formData.supplierId) {
+        if (!canEdit) {
+          message.warning("You don’t have permission to edit suppliers.");
+          return;
+        }
         await updateSupplier(formData.supplierId, formData);
-        message.success("Supplier updated");
+        message.success("Supplier updated successfully");
       } else {
+        if (!canCreate) {
+          message.warning("You don’t have permission to create suppliers.");
+          return;
+        }
         await createSupplier(formData);
-        message.success("Supplier added");
+        message.success("Supplier added successfully");
       }
       setModalOpen(false);
       fetchData();
     } catch {
-      message.error("Save failed");
+      message.error("Failed to save supplier");
     }
   };
 
   const handleDelete = async (id: number) => {
+    if (!canDelete) {
+      message.warning("You don’t have permission to delete suppliers.");
+      return;
+    }
+
     try {
       await deleteSupplier(id);
-      message.success("Supplier deleted");
+      message.success("Supplier deleted successfully");
       fetchData();
     } catch {
-      message.error("Delete failed");
+      message.error("Failed to delete supplier");
     }
   };
 
@@ -115,7 +152,11 @@ const SupplierPage: React.FC = () => {
       past.setMonth(today.getMonth() - 1);
       const startDate = past.toISOString().split("T")[0];
 
-      const res = await getSupplierPurchaseHistory(supplier.supplierId, startDate, endDate);
+      const res = await getSupplierPurchaseHistory(
+        supplier.supplierId,
+        startDate,
+        endDate
+      );
       setHistoryData(res);
     } catch {
       message.error("Failed to fetch purchase history");
@@ -124,27 +165,35 @@ const SupplierPage: React.FC = () => {
     setHistoryLoading(false);
   };
 
-  const columns = [
+  // ✅ Table columns based on permissions
+  const columns: any[] = [
     { title: "Name", dataIndex: "supplierName" },
     { title: "Contact Person", dataIndex: "contactPerson" },
     { title: "Phone", dataIndex: "phoneNumber" },
     { title: "Address", dataIndex: "address" },
-    {
+  ];
+
+  if (canEdit || canDelete) {
+    columns.push({
       title: "Actions",
       render: (_: any, record: any) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => openModal(record)}
-            className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
-          >
-            <Pencil size={14} />
-          </button>
-          <button
-            onClick={() => handleDelete(record.supplierId)}
-            className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
-          >
-            <Trash2 size={14} />
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => openModal(record)}
+              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
+            >
+              <Pencil size={14} />
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => handleDelete(record.supplierId)}
+              className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
           <button
             onClick={() => openHistory(record)}
             className="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition flex items-center gap-1"
@@ -153,25 +202,26 @@ const SupplierPage: React.FC = () => {
           </button>
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   const totalSuppliers = filtered.length;
   const suppliersWithPhone = filtered.filter((s) => s.phoneNumber?.trim()).length;
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-indigo-800">Supplier Management</h1>
         <div className="flex gap-3">
-          <button
-            onClick={() => openModal()}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow transition"
-          >
-            <UserPlus size={18} /> Add Supplier
-          </button>
+          {canCreate && (
+            <button
+              onClick={() => openModal()}
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow transition"
+            >
+              <UserPlus size={18} /> Add Supplier
+            </button>
+          )}
           <button
             onClick={fetchData}
             className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition"
@@ -230,7 +280,6 @@ const SupplierPage: React.FC = () => {
       {historyOpen && (
         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-end z-50">
           <div className="bg-white w-full sm:w-[420px] h-full shadow-xl p-6 overflow-y-auto">
-
             <h2 className="text-xl font-bold text-indigo-700 mb-4">
               {selectedSupplier?.supplierName} - Purchase History (Last 30 Days)
             </h2>
@@ -242,11 +291,16 @@ const SupplierPage: React.FC = () => {
             ) : (
               <div className="space-y-3">
                 {historyData.map((item, index) => (
-                  <div key={index} className="p-3 bg-gray-50 border rounded-lg hover:bg-indigo-50 transition">
+                  <div
+                    key={index}
+                    className="p-3 bg-gray-50 border rounded-lg hover:bg-indigo-50 transition"
+                  >
                     <p className="font-semibold text-gray-800">{item.productName}</p>
                     <p className="text-sm text-gray-600">Date: {item.purchaseDate}</p>
                     <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                    <p className="text-sm text-gray-600">Price: ₹ {item.thresholdPrice}</p>
+                    <p className="text-sm text-gray-600">
+                      Price: ₹ {item.thresholdPrice}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -258,7 +312,6 @@ const SupplierPage: React.FC = () => {
             >
               Close
             </button>
-
           </div>
         </div>
       )}

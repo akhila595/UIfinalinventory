@@ -24,20 +24,38 @@ export default function LoginPage({ onLogin }: Props) {
     setLoading(true);
 
     try {
+      // Step 1: Login
       const res = await loginUser({ email, password });
-      const { token, name, role, email: userEmail } = res?.data;
+      const { token, name, email: userEmail, roles, permissions } = res.data;
 
       if (!token) {
         setError("Login successful but no token received.");
         return;
       }
 
-      // Save token and user info, including email
+      // Step 2: Store token and user info in localStorage
       localStorage.setItem("authToken", token);
-      localStorage.setItem("userData", JSON.stringify({ name, role, email: userEmail }));
 
+      // Store user data (including roles and permissions)
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          name,
+          email: userEmail,
+          roles,
+          permissions, // Store permissions here
+        })
+      );
+
+      // Optionally, store permissions directly
+      localStorage.setItem("permissions", JSON.stringify(permissions));
+
+      // Trigger the onLogin callback, if provided
       onLogin?.();
-      navigate("/app"); // Redirect after login
+
+      // Redirect to the app
+      navigate("/app");
+
     } catch (err: any) {
       if (err.response?.data?.message) {
         setError(err.response.data.message);
@@ -65,7 +83,9 @@ export default function LoginPage({ onLogin }: Props) {
           alt="Logo"
           className="h-12 w-12 object-contain rounded-full shadow-lg"
         />
-        <span className="text-white text-2xl font-extrabold drop-shadow-lg">MyProduct</span>
+        <span className="text-white text-2xl font-extrabold drop-shadow-lg">
+          MyProduct
+        </span>
       </div>
 
       <motion.div
@@ -78,8 +98,8 @@ export default function LoginPage({ onLogin }: Props) {
           Smart Inventory Manager
         </h2>
         <p className="text-lg leading-relaxed text-gray-200">
-          Simplify your business management with real-time analytics, automated
-          stock tracking, and an intuitive dashboard designed to boost productivity.
+          Simplify your business management with real-time analytics,
+          automated stock tracking, and an intuitive dashboard designed to boost productivity.
         </p>
       </motion.div>
 
@@ -92,7 +112,9 @@ export default function LoginPage({ onLogin }: Props) {
         <h2 className="text-3xl font-extrabold text-center mb-3 bg-gradient-to-r from-blue-400 to-teal-300 bg-clip-text text-transparent">
           Welcome Back 👋
         </h2>
-        <p className="text-center text-gray-200 mb-6">Login to your account to continue</p>
+        <p className="text-center text-gray-200 mb-6">
+          Login to your account to continue
+        </p>
 
         {error && (
           <div className="bg-red-500/20 border border-red-400 text-red-200 px-4 py-2 rounded mb-4 text-sm text-center">

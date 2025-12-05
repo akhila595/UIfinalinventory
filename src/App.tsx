@@ -11,10 +11,11 @@ import StockOutPage from "@/pages/StockOut";
 import LowStockPage from "@/pages/LowStock";
 import SupplierPage from "@/pages/Suppliers";
 import ReportsPage from "@/pages/Reports";
+import UserRolesPage from "@/pages/UserRolesMain";
 /*import SettingsPage from "@/pages/Settings";
 import HelpPage from "@/pages/Help";
 import NotificationsPage from "@/pages/Notifications";
-import UserRolesPage from "@/pages/UserRoles";*/
+*/
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
           <Route path="low-stock" element={<LowStockPage />} />
           <Route path="supplier" element={<SupplierPage />} />
           <Route path="reports" element={<ReportsPage />} />
+          <Route path="user-roles" element={<UserRolesPage />} />
             {/*<Route path="settings" element={<SettingsPage />} />
           <Route path="help" element={<HelpPage />} />
           <Route path="notifications" element={<NotificationsPage />} />

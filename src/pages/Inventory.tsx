@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { message, Modal, Input, Select, Table } from "antd";
+import type { TableProps } from "antd";
 import { motion } from "framer-motion";
 import {
   getAllProducts,
@@ -14,6 +15,7 @@ import {
   FileDown,
   Search,
   Filter,
+  Lock,
 } from "lucide-react";
 
 const { Option } = Select;
@@ -33,6 +35,32 @@ const InventoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
+  // ✅ Load permissions from localStorage
+  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+  const permissions: string[] = userData.permissions || [];
+
+  const hasPermission = (code: string) => permissions.includes(code);
+
+  // ✅ Permission flags
+  const canView = hasPermission("PRODUCT_VIEW");
+  const canAdd = hasPermission("PRODUCT_ADD");
+  const canEdit = hasPermission("PRODUCT_EDIT");
+  const canDelete = hasPermission("PRODUCT_DELETE");
+
+  // ❌ If user cannot view products — block entirely
+  if (!canView) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen text-gray-600">
+        <Lock size={50} className="text-red-500 mb-4" />
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-gray-500">
+          You do not have permission to view this page.
+        </p>
+      </div>
+    );
+  }
+
+  // ✅ Fetch products
   const fetchProducts = async () => {
     setLoading(true);
     try {
@@ -40,7 +68,6 @@ const InventoryPage: React.FC = () => {
       setProducts(res.data);
       setFilteredProducts(res.data);
 
-      // ✅ Type-safe unique pattern extraction
       const uniquePatterns = Array.from(
         new Set(
           res.data.map((p: ProductDTO): string =>
@@ -75,6 +102,7 @@ const InventoryPage: React.FC = () => {
     setFilteredProducts(filtered);
   }, [searchTerm, categoryFilter, products]);
 
+  // ✅ CRUD actions
   const openModal = (product?: ProductDTO) => {
     setEditingProduct(product || null);
     setFormData(product || { productName: "", designCode: "", pattern: "" });
@@ -84,9 +112,17 @@ const InventoryPage: React.FC = () => {
   const handleSave = async () => {
     try {
       if (editingProduct) {
+        if (!canEdit) {
+          message.warning("You don’t have permission to edit products.");
+          return;
+        }
         await updateProduct(editingProduct.id!, formData);
         message.success("Product updated successfully");
       } else {
+        if (!canAdd) {
+          message.warning("You don’t have permission to add products.");
+          return;
+        }
         await createProduct(formData);
         message.success("Product created successfully");
       }
@@ -98,6 +134,11 @@ const InventoryPage: React.FC = () => {
   };
 
   const handleDelete = async (id: number) => {
+    if (!canDelete) {
+      message.warning("You don’t have permission to delete products.");
+      return;
+    }
+
     try {
       await deleteProduct(id);
       message.success("Product deleted successfully");
@@ -122,7 +163,8 @@ const InventoryPage: React.FC = () => {
     a.click();
   };
 
-  const columns = [
+  // ✅ Columns (Actions depend on permission)
+  const columns: TableProps<ProductDTO>["columns"] = [
     {
       title: "Product Name",
       dataIndex: "productName",
@@ -147,28 +189,37 @@ const InventoryPage: React.FC = () => {
         <span className="text-gray-700 font-medium">{text}</span>
       ),
     },
-    {
+  ];
+
+  // ✅ Add Actions column only if edit/delete permissions exist
+  if (canEdit || canDelete) {
+    columns.push({
       title: "Actions",
       key: "actions",
       render: (_: any, record: ProductDTO) => (
         <div className="flex gap-2">
-          <button
-            onClick={() => openModal(record)}
-            className="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => handleDelete(record.id!)}
-            className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm transition"
-          >
-            Delete
-          </button>
+          {canEdit && (
+            <button
+              onClick={() => openModal(record)}
+              className="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition"
+            >
+              Edit
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={() => handleDelete(record.id!)}
+              className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm transition"
+            >
+              Delete
+            </button>
+          )}
         </div>
       ),
-    },
-  ];
+    });
+  }
 
+  // ✅ UI
   return (
     <motion.div
       initial={{ opacity: 0, y: 15 }}
@@ -183,13 +234,15 @@ const InventoryPage: React.FC = () => {
         </h1>
 
         <div className="flex gap-3">
-          <button
-            onClick={() => openModal()}
-            className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition"
-          >
-            <PlusCircle size={18} />
-            Add Product
-          </button>
+          {canAdd && (
+            <button
+              onClick={() => openModal()}
+              className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition"
+            >
+              <PlusCircle size={18} />
+              Add Product
+            </button>
+          )}
           <button
             onClick={fetchProducts}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow-md transition"
@@ -207,30 +260,7 @@ const InventoryPage: React.FC = () => {
         </div>
       </div>
 
-      {/* ✅ Summary Cards */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6"
-      >
-        {[
-          { title: "Total Products", value: filteredProducts.length },
-          { title: "Unique Patterns", value: patterns.length },
-        ].map((card, index) => (
-          <motion.div
-            key={index}
-            whileHover={{ scale: 1.03 }}
-            transition={{ type: "spring", stiffness: 200 }}
-            className="bg-white shadow-md border border-indigo-100 rounded-xl p-5"
-          >
-            <p className="text-sm text-gray-500">{card.title}</p>
-            <p className="text-2xl font-bold text-indigo-700">{card.value}</p>
-          </motion.div>
-        ))}
-      </motion.div>
-
-      {/* ✅ Filters */}
+      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-4">
         <div className="flex items-center w-full sm:w-1/2 bg-white shadow-sm border border-indigo-100 rounded-lg px-3 py-2">
           <Search size={18} className="text-gray-500 mr-2" />
@@ -280,19 +310,25 @@ const InventoryPage: React.FC = () => {
         <Input
           placeholder="Product Name"
           value={formData.productName}
-          onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, productName: e.target.value })
+          }
           style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Design Code"
           value={formData.designCode}
-          onChange={(e) => setFormData({ ...formData, designCode: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, designCode: e.target.value })
+          }
           style={{ marginBottom: 10 }}
         />
         <Input
           placeholder="Pattern"
           value={formData.pattern}
-          onChange={(e) => setFormData({ ...formData, pattern: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, pattern: e.target.value })
+          }
           style={{ marginBottom: 10 }}
         />
       </Modal>
