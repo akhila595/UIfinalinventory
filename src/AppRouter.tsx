@@ -9,22 +9,21 @@ import LoginPage from "@/loginflow/LoginPage";
 import SuperAdminLoginPage from "@/superadmin/pages/SuperAdminLoginPage";
 import ProtectedSuperAdminRoute from "@/superadmin/components/ProtectedSuperAdminRoute";
 
+// Super Admin Context
+import { CustomerProvider } from "@/superadmin/components/CustomerContext";
+
 // Super Admin Pages
 import SuperAdminDashboard from "@/superadmin/pages/Dashboard";
-
-// Users
 import UserList from "@/superadmin/pages/UserList";
-
-// Roles
 import RolesList from "@/superadmin/pages/RoleList";
 import CreateRole from "@/superadmin/pages/RoleCreate";
 import EditRole from "@/superadmin/pages/RoleEdit";
 import AssignPermissions from "@/superadmin/pages/AssignPermissions";
-
-// Permissions
 import PermissionsList from "@/superadmin/pages/PermissionList";
 import CreatePermission from "@/superadmin/pages/PermissionCreate";
 import EditPermission from "@/superadmin/pages/PermissionEdit";
+import CustomerListPage from "@/superadmin/pages/CustomerListPage";
+import CreateCustomerForm from "@/superadmin/pages/CreateCustomerForm";
 
 export default function AppRouter() {
   return (
@@ -39,72 +38,81 @@ export default function AppRouter() {
       {/* Super Admin Login */}
       <Route path="/admin" element={<SuperAdminLoginPage />} />
 
-      {/* Super Admin Dashboard */}
+      {/* ================= SUPER ADMIN ROUTES ================= */}
+
       <Route
         path="/superadmin/dashboard"
         element={
           <ProtectedSuperAdminRoute>
-            <SuperAdminDashboard />
+            <CustomerProvider>
+              <SuperAdminDashboard />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* USERS */}
       <Route
         path="/superadmin/users"
         element={
           <ProtectedSuperAdminRoute>
-            <UserList />
+            <CustomerProvider>
+              <UserList />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* ROLES LIST */}
       <Route
         path="/superadmin/roles"
         element={
           <ProtectedSuperAdminRoute>
-            <RolesList />
+            <CustomerProvider>
+              <RolesList />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* CREATE ROLE */}
       <Route
         path="/superadmin/roles/create"
         element={
           <ProtectedSuperAdminRoute>
-            <CreateRole />
+            <CustomerProvider>
+              <CreateRole />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* EDIT ROLE */}
       <Route
         path="/superadmin/roles/:id/edit"
         element={
           <ProtectedSuperAdminRoute>
-            <EditRole />
+            <CustomerProvider>
+              <EditRole />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* ASSIGN PERMISSIONS */}
       <Route
         path="/superadmin/roles/:id/permissions"
         element={
           <ProtectedSuperAdminRoute>
-            <AssignPermissions />
+            <CustomerProvider>
+              <AssignPermissions />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
 
-      {/* PERMISSIONS */}
       <Route
         path="/superadmin/permissions"
         element={
           <ProtectedSuperAdminRoute>
-            <PermissionsList />
+            <CustomerProvider>
+              <PermissionsList />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
@@ -113,7 +121,9 @@ export default function AppRouter() {
         path="/superadmin/permissions/create"
         element={
           <ProtectedSuperAdminRoute>
-            <CreatePermission />
+            <CustomerProvider>
+              <CreatePermission />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />
@@ -122,7 +132,31 @@ export default function AppRouter() {
         path="/superadmin/permissions/:id/edit"
         element={
           <ProtectedSuperAdminRoute>
-            <EditPermission />
+            <CustomerProvider>
+              <EditPermission />
+            </CustomerProvider>
+          </ProtectedSuperAdminRoute>
+        }
+      />
+
+      <Route
+        path="/superadmin/customers"
+        element={
+          <ProtectedSuperAdminRoute>
+            <CustomerProvider>
+              <CustomerListPage />
+            </CustomerProvider>
+          </ProtectedSuperAdminRoute>
+        }
+      />
+
+      <Route
+        path="/superadmin/create-customer"
+        element={
+          <ProtectedSuperAdminRoute>
+            <CustomerProvider>
+              <CreateCustomerForm />
+            </CustomerProvider>
           </ProtectedSuperAdminRoute>
         }
       />

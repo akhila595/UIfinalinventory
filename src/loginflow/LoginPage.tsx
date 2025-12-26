@@ -56,13 +56,16 @@ export default function LoginPage({ onLogin }: Props) {
       // Redirect to the app
       navigate("/app");
 
-    } catch (err: any) {
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError("Something went wrong. Please try again.");
+    } 
+     catch (err: any) {
+      const status = err.response?.status;
+      if (status === 401) {
+      setError("Invalid email or password");
+        } else {
+       setError("Unable to login. Please try again later.");
+       }
       }
-    } finally {
+    finally {
       setLoading(false);
     }
   };

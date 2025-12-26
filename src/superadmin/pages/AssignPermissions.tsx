@@ -18,7 +18,6 @@ export default function AssignPermissions() {
     loadPermissionsList();
   }, []);
 
-  // Get role details + assigned permissions
   const loadRoleDetails = async () => {
     const res = await axios.get(`/api/roles/${roleId}`);
     setRoleName(res.data.name);
@@ -27,7 +26,6 @@ export default function AssignPermissions() {
     setAssigned(permRes.data.map((p: any) => p.id));
   };
 
-  // Get all permissions
   const loadPermissionsList = async () => {
     const data = await getPermissions();
     setPermissions(data);
@@ -55,8 +53,7 @@ export default function AssignPermissions() {
     await axios.post(`/api/roles/${roleId}/permissions`, {
       permissionIds: assigned,
     });
-
-    alert("Permissions updated successfully!");
+    alert("✅ Permissions updated successfully!");
   };
 
   if (loading) return <div className="p-6">Loading...</div>;
@@ -64,7 +61,9 @@ export default function AssignPermissions() {
   return (
     <div className="p-6 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-2">Assign Permissions</h1>
-      <p className="text-gray-600 mb-4">Role: <b>{roleName}</b></p>
+      <p className="text-gray-600 mb-4">
+        Role: <b>{roleName}</b>
+      </p>
 
       {/* Search */}
       <input
@@ -96,7 +95,6 @@ export default function AssignPermissions() {
 
       {/* Permissions List */}
       <div className="border rounded-lg p-4 bg-gray-50 max-h-[400px] overflow-auto">
-
         {permissions
           .filter(
             (p) =>

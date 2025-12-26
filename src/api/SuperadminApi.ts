@@ -11,7 +11,7 @@ export const login = async (payload: { email: string; password: string }) => {
 
 /*  
  ===========================================
- 🛑 SUPER ADMIN SECTION (Correct Endpoints)
+ 🛑 SUPER ADMIN SECTION (Core APIs)
  ===========================================
 */
 
@@ -122,5 +122,64 @@ export const assignPermissionsToRole = async (
 export const getLogs = async () =>
   (await axios.get("/api/logs")).data;
 
+/*  
+ -------------------------------------------
+ 👤 GET USER ROLES
+ Backend:
+ GET /api/roles/user/{userId}
+ -------------------------------------------
+*/
 export const getUserRoles = async (userId: number) =>
   (await axios.get(`/api/roles/user/${userId}`)).data;
+
+/*  
+ ===========================================
+ 🏢 SUPER ADMIN — CUSTOMER MANAGEMENT
+ (NEW SECTION)
+ ===========================================
+*/
+
+/*  
+ -------------------------------------------
+ 🏗 CREATE CUSTOMER + ADMIN
+ Backend:
+ POST /api/superadmin/create-customer
+ -------------------------------------------
+*/
+export const createCustomerWithAdmin = async (payload: any) =>
+  (await axios.post("/api/superadmin/create-customer", payload)).data;
+
+/*  
+ -------------------------------------------
+ 👥 GET ALL CUSTOMERS
+ Backend:
+ GET /api/superadmin/customers
+ -------------------------------------------
+*/
+export const getAllCustomers = async () =>
+  (await axios.get("/api/superadmin/customers")).data;
+
+/* -------------------------------------------
+ 🧹 DELETE CUSTOMER
+ Backend: DELETE /api/superadmin/customers/{id}
+------------------------------------------- */
+export const deleteCustomer = async (id: number) =>
+  (await axios.delete(`/api/superadmin/customers/${id}`)).data;
+
+/* -------------------------------------------
+ ✏️ UPDATE CUSTOMER
+ Backend: PUT /api/superadmin/customers/{id}
+------------------------------------------- */
+export const updateCustomer = async (id: number, payload: any) =>
+  (await axios.put(`/api/superadmin/customers/${id}`, payload)).data;
+
+/* -------------------------------------------
+ 👤 VIEW ADMIN (Get users of customer)
+ Backend: GET /api/users?customerId={id} (you can adjust later)
+------------------------------------------- */
+export const getCustomerAdmins = async (customerId: number) =>
+  (await axios.get(`/api/superadmin/customers/${customerId}`)).data;
+
+export const getUserById = async (id: number) =>
+  (await axios.get(`/api/users/${id}`)).data;
+

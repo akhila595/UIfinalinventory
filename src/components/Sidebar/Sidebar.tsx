@@ -10,6 +10,7 @@ import {
   BarChart3,
   Truck,
   User,
+  Users,          // ✅ NEW ICON
   Settings,
   FileText,
   LogOut,
@@ -30,7 +31,6 @@ const Sidebar: React.FC = () => {
     const storedUser = localStorage.getItem("userData");
     if (storedUser) {
       const parsed = JSON.parse(storedUser);
-
       setUser({
         name: parsed.name,
         email: parsed.email,
@@ -41,31 +41,82 @@ const Sidebar: React.FC = () => {
 
   // 🔥 Permission checker
   const hasPermission = (perm: string | null) => {
-    if (perm === null) return true; // Dashboard (no permission required)
+    if (perm === null) return true; // Dashboard
     return user?.permissions?.includes(perm);
   };
 
-  // 🔥 Sidebar menu based on final permission codes
+  // 🔥 Sidebar menu
   const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/app/dashboard", permission: null },
+    {
+      name: "Dashboard",
+      icon: <LayoutDashboard size={22} />,
+      path: "/app/dashboard",
+      permission: null,
+    },
 
-    { name: "Inventory", icon: <Package size={22} />, path: "/app/inventory", permission: "INVENTORY_VIEW" },
+    {
+      name: "Inventory",
+      icon: <Package size={22} />,
+      path: "/app/inventory",
+      permission: "INVENTORY_VIEW",
+    },
 
-    { name: "Stock In", icon: <ArrowDownCircle size={22} />, path: "/app/stock-in", permission: "STOCK_IN_MANAGE" },
+    {
+      name: "Stock In",
+      icon: <ArrowDownCircle size={22} />,
+      path: "/app/stock-in",
+      permission: "STOCK_IN_MANAGE",
+    },
 
-    { name: "Stock Out", icon: <ArrowUpCircle size={22} />, path: "/app/stock-out", permission: "STOCK_OUT_MANAGE" },
+    {
+      name: "Stock Out",
+      icon: <ArrowUpCircle size={22} />,
+      path: "/app/stock-out",
+      permission: "STOCK_OUT_MANAGE",
+    },
 
-    { name: "Low Stock", icon: <AlertTriangle size={22} />, path: "/app/low-stock", permission: "LOW_STOCK_VIEW" },
+    {
+      name: "Low Stock",
+      icon: <AlertTriangle size={22} />,
+      path: "/app/low-stock",
+      permission: "LOW_STOCK_VIEW",
+    },
 
-    { name: "Reports", icon: <BarChart3 size={22} />, path: "/app/reports", permission: "REPORT_VIEW" },
+    {
+      name: "Reports",
+      icon: <BarChart3 size={22} />,
+      path: "/app/reports",
+      permission: "REPORT_VIEW",
+    },
 
-    { name: "Supplier", icon: <Truck size={22} />, path: "/app/supplier", permission: "SUPPLIER_VIEW" },
+    {
+      name: "Supplier",
+      icon: <Truck size={22} />,
+      path: "/app/supplier",
+      permission: "SUPPLIER_VIEW",
+    },
 
-    { name: "User Roles", icon: <User size={22} />, path: "/app/user-roles", permission: "ROLE_MANAGE" },
+    // ✅ NEW: MANAGE USERS MODULE
+    {
+      name: "Manage Users",
+      icon: <Users size={22} />,
+      path: "/app/users",
+      permission: "USER_VIEW",
+    },
 
-    { name: "Settings", icon: <Settings size={22} />, path: "/app/settings", permission: "SYSTEM_SETTINGS_EDIT" },
+    {
+      name: "User Roles",
+      icon: <User size={22} />,
+      path: "/app/user-roles",
+      permission: "ROLE_MANAGE",
+    },
 
-    { name: "Logs", icon: <FileText size={22} />, path: "/app/logs", permission: "VIEW_LOGS" },
+    {
+      name: "Settings",
+      icon: <Settings size={22} />,
+      path: "/app/settings",
+      permission: "SYSTEM_SETTINGS_EDIT",
+    },
   ];
 
   const handleLogout = () => {
@@ -94,21 +145,22 @@ const Sidebar: React.FC = () => {
 
       {/* Menu */}
       <div className="mt-8 flex-1 space-y-2">
-        {menuItems.map((item) =>
-          hasPermission(item.permission) ? (
-            <button
-              key={item.name}
-              onClick={() => navigate(item.path)}
-              className={`flex items-center gap-3 w-full px-6 py-3 rounded-xl transition ${
-                location.pathname === item.path
-                  ? "bg-indigo-600 text-white"
-                  : "text-indigo-200 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {item.icon}
-              {item.name}
-            </button>
-          ) : null
+        {menuItems.map(
+          (item) =>
+            hasPermission(item.permission) && (
+              <button
+                key={item.name}
+                onClick={() => navigate(item.path)}
+                className={`flex items-center gap-3 w-full px-6 py-3 rounded-xl transition ${
+                  location.pathname === item.path
+                    ? "bg-indigo-600 text-white"
+                    : "text-indigo-200 hover:bg-white/10 hover:text-white"
+                }`}
+              >
+                {item.icon}
+                {item.name}
+              </button>
+            )
         )}
       </div>
 

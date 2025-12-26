@@ -1,54 +1,95 @@
 import React, { useEffect, useState } from "react";
-import { fetchUsers, fetchRoles, assignRoles } from "@/api/userRoleApi";
+import {
+  fetchUsersWithRoles,
+  fetchRoles,
+  assignRoles,
+} from "@/api/userRoleApi";
 
 interface Props {
   onClose: () => void;
 }
 
+interface UserDTO {
+  id: number;
+  name: string;
+  email: string;
+  roleNames: string[];
+}
+
+interface RoleDTO {
+  id: number;
+  name: string;
+}
+
 const AssignRoleModal: React.FC<Props> = ({ onClose }) => {
-  const [users, setUsers] = useState<any[]>([]);
-  const [roles, setRoles] = useState<any[]>([]);
-  const [selectedUser, setSelectedUser] = useState<number | null>(null);
-  const [selectedRole, setSelectedRole] = useState<number | null>(null);
+  const [users, setUsers] = useState<UserDTO[]>([]);
+  const [roles, setRoles] = useState<RoleDTO[]>([]);
+  const [selectedUser, setSelectedUser] = useState<number | "">("");
+  const [selectedRole, setSelectedRole] = useState<number | "">("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     load();
   }, []);
 
   const load = async () => {
-    const u = await fetchUsers();
-    const r = await fetchRoles();
-    setUsers(u.data);
-    setRoles(r.data);
+    try {
+      const [u, r] = await Promise.all([
+        fetchUsersWithRoles(), // ✅ customer-aware
+        fetchRoles(),
+      ]);
+
+      setUsers(u.data || []);
+      setRoles(r.data || []);
+    } catch (err) {
+      console.error("Failed to load users/roles", err);
+    }
   };
 
   const handleAssign = async () => {
     if (!selectedUser || !selectedRole) return;
-    await assignRoles({ userId: selectedUser, roleIds: [selectedRole] });
-    onClose();
+
+    try {
+      setLoading(true);
+      await assignRoles({
+        userId: selectedUser,
+        roleIds: [selectedRole],
+      });
+      onClose();
+    } catch (err) {
+      console.error("Role assignment failed", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded-xl w-[400px] shadow-lg">
-        <h2 className="text-xl font-semibold mb-4 text-indigo-700">Assign Role</h2>
+      <div className="bg-white rounded-2xl w-[420px] shadow-2xl p-6">
+        <h2 className="text-xl font-semibold mb-5 text-indigo-700">
+          Assign Role
+        </h2>
 
+        {/* USER */}
+        <label className="block text-sm text-gray-600 mb-1">User</label>
         <select
-          className="w-full border p-2 rounded mb-3"
-          value={selectedUser ?? ""}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          value={selectedUser}
           onChange={(e) => setSelectedUser(Number(e.target.value))}
         >
           <option value="">Select User</option>
           {users.map((u) => (
-            <option key={u.userId} value={u.userId}>
+            <option key={u.id} value={u.id}>
               {u.name} ({u.email})
             </option>
           ))}
         </select>
 
+        {/* ROLE */}
+        <label className="block text-sm text-gray-600 mb-1">Role</label>
         <select
-          className="w-full border p-2 rounded mb-4"
-          value={selectedRole ?? ""}
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          value={selectedRole}
           onChange={(e) => setSelectedRole(Number(e.target.value))}
         >
           <option value="">Select Role</option>
@@ -59,15 +100,21 @@ const AssignRoleModal: React.FC<Props> = ({ onClose }) => {
           ))}
         </select>
 
+        {/* ACTIONS */}
         <div className="flex justify-end gap-3">
-          <button className="px-4 py-2" onClick={onClose}>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100"
+          >
             Cancel
           </button>
+
           <button
             onClick={handleAssign}
-            className="px-4 py-2 bg-indigo-600 text-white rounded"
+            disabled={!selectedUser || !selectedRole || loading}
+            className="px-4 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50"
           >
-            Assign
+            {loading ? "Assigning..." : "Assign"}
           </button>
         </div>
       </div>

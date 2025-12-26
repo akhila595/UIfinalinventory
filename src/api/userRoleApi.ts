@@ -1,14 +1,36 @@
 import api from "@/api/axios";
 
-// Get roles list
-export const fetchRoles = () => api.get("/api/roles");
+/* =========================
+   ROLES
+========================= */
+
+// Get roles list (customer-aware)
+export const fetchRoles = () =>
+  api.get("/api/roles");
 
 // Get permissions
-export const fetchPermissions = () => api.get("/api/roles/permissions");
+export const fetchPermissions = () =>
+  api.get("/api/roles/permissions");
 
-// Get all users
-export const fetchUsers = () => api.get("/api/users");
+/* =========================
+   USERS
+========================= */
+
+// Get all users (basic)
+export const fetchUsers = () =>
+  api.get("/api/users");
+
+// ✅ Get users WITH roles (customer-aware, optimized)
+export const fetchUsersWithRoles = () =>
+  api.get("/api/users/users-with-roles");
+
+/* =========================
+   ROLE ASSIGNMENT
+========================= */
 
 // Assign roles to user
-export const assignRoles = (payload: { userId: number; roleIds: number[] }) =>
-  api.post("/api/users/assign-roles", payload);
+export const assignRoles = (payload: {
+  userId: number;
+  roleIds: number[];
+}) =>
+  api.post("/api/roles/assign", payload);
