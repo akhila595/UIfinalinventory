@@ -41,8 +41,18 @@ export const getUsers = async () =>
 export const createUser = async (payload: any) =>
   (await axios.post("/api/users", payload)).data;
 
-export const updateUser = async (id: string, payload: any) =>
-  (await axios.put(`/api/users/${id}`, payload)).data;
+export const updateUser = async (id: string, payload: any) => {
+  const token = localStorage.getItem("token");
+
+  return (
+    await axios.put(`/api/users/${id}`, payload, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+  ).data;
+};
+
 
 export const deleteUser = async (id: string) =>
   (await axios.delete(`/api/users/${id}`)).data;
@@ -183,3 +193,22 @@ export const getCustomerAdmins = async (customerId: number) =>
 export const getUserById = async (id: number) =>
   (await axios.get(`/api/users/${id}`)).data;
 
+export const uploadUserProfileImage = async (
+  userId: number,
+  formData: FormData
+) => {
+  const token = localStorage.getItem("token");
+
+  const response = await axios.post(
+    `/api/users/${userId}/profile-image`,
+    formData,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  );
+
+  return response.data; // { imageUrl }
+};

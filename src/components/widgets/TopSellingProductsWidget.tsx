@@ -6,7 +6,7 @@ import { getTopSellingProducts } from "@/api/reportApi";
 interface TopProduct {
   productName: string;
   quantitySold: number;
-  productImage?: string;
+  imageUrl?: string;
 }
 
 interface TopSellingProductsWidgetProps {
@@ -197,7 +197,7 @@ const TopSellingProductsWidget: React.FC<TopSellingProductsWidgetProps> = ({
               className="flex items-center gap-3 p-3 rounded-xl bg-white/70 border border-[#dbeeff] hover:bg-white transition shadow-sm"
             >
               <img
-                src={getImageUrl(product.productImage)}
+                src={getImageUrl(product.imageUrl)}
                 alt={product.productName}
                 className="w-12 h-12 object-cover rounded-lg shadow-sm"
                 onError={(e) =>

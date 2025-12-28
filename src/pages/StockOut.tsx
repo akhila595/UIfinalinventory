@@ -4,6 +4,16 @@ import toast from "react-hot-toast";
 import StockOutForm from "@/components/forms/StockOutForm";
 import { getRecentStockOuts } from "@/api/stockApi";
 
+/* ✅ IMAGE FIX ONLY */
+const API_BASE =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+
+const getImageUrl = (url?: string) => {
+  if (!url) return "/images/no-image.png";
+  return url.startsWith("http") ? url : `${API_BASE}${url}`;
+};
+/* ✅ IMAGE FIX ONLY */
+
 const StockOutPage: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,22 +95,20 @@ const StockOutPage: React.FC = () => {
 
                   {/* Product + Image */}
                   <td className="p-3 flex items-center gap-3">
-                    {s.imageUrl ? (
-                      <img
-                        src={s.imageUrl}
-                        alt={s.productName}
-                        className="w-10 h-10 rounded object-cover border"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 rounded bg-gray-200 flex items-center justify-center text-gray-500">
-                        🛍
-                      </div>
-                    )}
-                    <span className="font-medium text-gray-800">{s.productName}</span>
+                    <img
+                      src={getImageUrl(s.imageUrl)}
+                      alt={s.productName}
+                      className="w-10 h-10 rounded object-cover border"
+                    />
+                    <span className="font-medium text-gray-800">
+                      {s.productName}
+                    </span>
                   </td>
 
                   <td className="p-3 font-semibold text-gray-800">{s.sku}</td>
-                  <td className="p-3 text-indigo-700 font-bold">{s.quantityRemoved}</td>
+                  <td className="p-3 text-indigo-700 font-bold">
+                    {s.quantityRemoved}
+                  </td>
                   <td className="p-3">{s.reason || "-"}</td>
                   <td className="p-3">
                     {s.stockOutDate

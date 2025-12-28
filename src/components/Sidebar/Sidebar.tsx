@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -10,9 +10,8 @@ import {
   BarChart3,
   Truck,
   User,
-  Users,          // ✅ NEW ICON
+  Users,
   Settings,
-  FileText,
   LogOut,
 } from "lucide-react";
 
@@ -20,13 +19,24 @@ interface UserData {
   name: string;
   email: string;
   permissions: string[];
+  profileImage?: string | null;
 }
+
+const DEFAULT_IMAGE = "/images/default-user.jpeg";
 
 const Sidebar: React.FC = () => {
   const [user, setUser] = useState<UserData | null>(null);
+  const [userLoaded, setUserLoaded] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+
+  // 🔒 Prevent fallback loops
+  const imageFailedRef = useRef(false);
+
+  // ✅ Load user ONCE
   useEffect(() => {
     const storedUser = localStorage.getItem("userData");
     if (storedUser) {
@@ -35,88 +45,39 @@ const Sidebar: React.FC = () => {
         name: parsed.name,
         email: parsed.email,
         permissions: parsed.permissions || [],
+        profileImage: parsed.profileImage || null,
       });
     }
+    setUserLoaded(true);
   }, []);
 
-  // 🔥 Permission checker
+  // ✅ Decide image BEFORE render
+  const profileImageSrc = useMemo(() => {
+    if (imageFailedRef.current) return DEFAULT_IMAGE;
+
+    if (!user?.profileImage) return DEFAULT_IMAGE;
+
+    return user.profileImage.startsWith("http")
+      ? user.profileImage
+      : `${API_BASE}${user.profileImage}`;
+  }, [user?.profileImage, API_BASE]);
+
   const hasPermission = (perm: string | null) => {
-    if (perm === null) return true; // Dashboard
+    if (perm === null) return true;
     return user?.permissions?.includes(perm);
   };
 
-  // 🔥 Sidebar menu
   const menuItems = [
-    {
-      name: "Dashboard",
-      icon: <LayoutDashboard size={22} />,
-      path: "/app/dashboard",
-      permission: null,
-    },
-
-    {
-      name: "Inventory",
-      icon: <Package size={22} />,
-      path: "/app/inventory",
-      permission: "INVENTORY_VIEW",
-    },
-
-    {
-      name: "Stock In",
-      icon: <ArrowDownCircle size={22} />,
-      path: "/app/stock-in",
-      permission: "STOCK_IN_MANAGE",
-    },
-
-    {
-      name: "Stock Out",
-      icon: <ArrowUpCircle size={22} />,
-      path: "/app/stock-out",
-      permission: "STOCK_OUT_MANAGE",
-    },
-
-    {
-      name: "Low Stock",
-      icon: <AlertTriangle size={22} />,
-      path: "/app/low-stock",
-      permission: "LOW_STOCK_VIEW",
-    },
-
-    {
-      name: "Reports",
-      icon: <BarChart3 size={22} />,
-      path: "/app/reports",
-      permission: "REPORT_VIEW",
-    },
-
-    {
-      name: "Supplier",
-      icon: <Truck size={22} />,
-      path: "/app/supplier",
-      permission: "SUPPLIER_VIEW",
-    },
-
-    // ✅ NEW: MANAGE USERS MODULE
-    {
-      name: "Manage Users",
-      icon: <Users size={22} />,
-      path: "/app/users",
-      permission: "USER_VIEW",
-    },
-
-    {
-      name: "User Roles",
-      icon: <User size={22} />,
-      path: "/app/user-roles",
-      permission: "ROLE_MANAGE",
-    },
-
-    {
-      name: "Settings",
-      icon: <Settings size={22} />,
-      path: "/app/settings",
-      permission: "SYSTEM_SETTINGS_EDIT",
-    },
+    { name: "Dashboard", icon: <LayoutDashboard size={22} />, path: "/app/dashboard", permission: null },
+    { name: "Inventory", icon: <Package size={22} />, path: "/app/inventory", permission: "INVENTORY_VIEW" },
+    { name: "Stock In", icon: <ArrowDownCircle size={22} />, path: "/app/stock-in", permission: "STOCK_IN_MANAGE" },
+    { name: "Stock Out", icon: <ArrowUpCircle size={22} />, path: "/app/stock-out", permission: "STOCK_OUT_MANAGE" },
+    { name: "Low Stock", icon: <AlertTriangle size={22} />, path: "/app/low-stock", permission: "LOW_STOCK_VIEW" },
+    { name: "Reports", icon: <BarChart3 size={22} />, path: "/app/reports", permission: "REPORT_VIEW" },
+    { name: "Supplier", icon: <Truck size={22} />, path: "/app/supplier", permission: "SUPPLIER_VIEW" },
+    { name: "Manage Users", icon: <Users size={22} />, path: "/app/users", permission: "USER_VIEW" },
+    { name: "User Roles", icon: <User size={22} />, path: "/app/user-roles", permission: "ROLE_MANAGE" },
+    { name: "Settings", icon: <Settings size={22} />, path: "/app/settings", permission: "SYSTEM_SETTINGS_EDIT" },
   ];
 
   const handleLogout = () => {
@@ -131,19 +92,23 @@ const Sidebar: React.FC = () => {
       transition={{ duration: 0.6 }}
       className="w-64 min-h-screen flex flex-col bg-gradient-to-b from-[#1e3a8a] via-[#1e40af] to-[#1e1b4b] text-white shadow-2xl border-r border-white/10 p-5 rounded-r-3xl"
     >
-      {/* User Info */}
-      {user && (
+      {/* 👤 User Info */}
+      {userLoaded && user && (
         <div className="flex flex-col items-center gap-3">
           <img
-            src="/images/default-user.jpeg"
-            className="w-20 h-20 rounded-full border-4 border-white/30 shadow-md"
+            src={profileImageSrc}
+            onError={() => {
+              imageFailedRef.current = true;
+            }}
+            className="w-20 h-20 rounded-full border-4 border-white/30 shadow-md object-cover"
+            alt="User Profile"
           />
           <h2 className="text-lg font-semibold">{user.name}</h2>
           <p className="text-sm text-indigo-200">{user.email}</p>
         </div>
       )}
 
-      {/* Menu */}
+      {/* 📋 Menu */}
       <div className="mt-8 flex-1 space-y-2">
         {menuItems.map(
           (item) =>
@@ -164,7 +129,7 @@ const Sidebar: React.FC = () => {
         )}
       </div>
 
-      {/* Logout */}
+      {/* 🚪 Logout */}
       <button
         onClick={handleLogout}
         className="mt-auto flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 py-2 rounded-xl shadow-md transition"

@@ -11,7 +11,6 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
     sku: "",
     quantity: "",
     remarks: "",
-    sellingPrice: "",
     finalPrice: "",
   });
 
@@ -39,24 +38,28 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
         quantity: Number(form.quantity),
         saleDate: new Date().toISOString(),
         remarks: form.remarks,
-        sellingPrice: form.sellingPrice ? Number(form.sellingPrice) : null,
         finalPrice: form.finalPrice ? Number(form.finalPrice) : null,
       };
 
-      await stockOut(payload);
-      toast.success("Stock-out recorded successfully!");
+      const res = await stockOut(payload);
+
+      // ✅ ONLY CHANGE: show backend message using alert
+      alert(res);
+
       onSuccess?.();
 
       setForm({
         sku: "",
         quantity: "",
         remarks: "",
-        sellingPrice: "",
         finalPrice: "",
       });
     } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message || err?.message || "Failed to record stock-out."
+      // ✅ ONLY CHANGE: show backend error using alert
+      alert(
+        err?.response?.data ||
+          err?.message ||
+          "Failed to record stock-out."
       );
     } finally {
       setSubmitting(false);
@@ -101,21 +104,6 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
             min={1}
             className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
             required
-          />
-        </div>
-
-        {/* Selling Price */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Selling Price (per unit)
-          </label>
-          <input
-            name="sellingPrice"
-            value={form.sellingPrice}
-            onChange={handleChange}
-            type="number"
-            step="0.01"
-            className="border rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-indigo-500 outline-none"
           />
         </div>
 

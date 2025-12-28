@@ -26,7 +26,7 @@ export default function LoginPage({ onLogin }: Props) {
     try {
       // Step 1: Login
       const res = await loginUser({ email, password });
-      const { token, name, email: userEmail, roles, permissions } = res.data;
+      const { token, name, email: userEmail, roles, permissions,profileImage } = res.data;
 
       if (!token) {
         setError("Login successful but no token received.");
@@ -44,6 +44,7 @@ export default function LoginPage({ onLogin }: Props) {
           email: userEmail,
           roles,
           permissions, // Store permissions here
+          profileImage,
         })
       );
 
