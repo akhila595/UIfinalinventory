@@ -3,7 +3,8 @@ import axios from "axios";
 
 // ✅ Create Axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api",
+  // ❗ URL must come ONLY from env (no localhost fallback in code)
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,19 +13,19 @@ const api = axios.create({
 // ✅ Request interceptor
 api.interceptors.request.use(
   (config) => {
-    // ✅ ENSURE headers always exist (KEY FIX)
+    // ✅ Ensure headers always exist (TypeScript safe)
     config.headers = config.headers ?? {};
 
     const token = localStorage.getItem("authToken");
     const userData = localStorage.getItem("userData");
     const selectedCustomerId = localStorage.getItem("selectedCustomerId");
 
-    // 🔹 Authorization
+    // 🔹 Authorization header
     if (token) {
       (config.headers as any).Authorization = `Bearer ${token}`;
     }
 
-    // 🔹 SuperAdmin flag
+    // 🔹 SuperAdmin + Customer context
     try {
       const user = userData ? JSON.parse(userData) : {};
       const roles = user?.roles || user?.roleNames || [];
@@ -59,6 +60,10 @@ api.interceptors.response.use(
     const status = error.response?.status;
     const requestUrl = error.config?.url || "";
 
+    /**
+     * ❗ Do NOT redirect on login failure
+     * Redirect only if token is invalid/expired
+     */
     if (status === 401 && !requestUrl.includes("/api/auth/login")) {
       localStorage.removeItem("authToken");
       localStorage.removeItem("userData");
@@ -71,4 +76,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-//
