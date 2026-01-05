@@ -15,17 +15,16 @@ export default function ProtectedSuperAdminRoute({ children }: Props) {
     user = null;
   }
 
-  // No token → Go to Super Admin Login
+  // 🔒 Not logged in → Super Admin Login
   if (!token) return <Navigate to="/admin" replace />;
 
-  // No user stored
-  if (!user || !user.roleNames) return <Navigate to="/admin" replace />;
+  if (!user || !Array.isArray(user.roleNames))
+    return <Navigate to="/admin" replace />;
 
-  // Must be valid array
-  if (!Array.isArray(user.roleNames)) return <Navigate to="/admin" replace />;
+  const roles = user.roleNames.map((r: string) => r.toUpperCase());
 
-  // Must have SUPER_ADMIN role
-  if (!user.roleNames.includes("SUPERADMIN"))
+  // 🔒 Logged in but NOT super admin → normal app
+  if (!roles.includes("SUPERADMIN"))
     return <Navigate to="/app/dashboard" replace />;
 
   return <>{children}</>;
