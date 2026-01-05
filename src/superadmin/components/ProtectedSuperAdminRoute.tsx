@@ -25,7 +25,7 @@ export default function ProtectedSuperAdminRoute({ children }: Props) {
   if (!Array.isArray(user.roleNames)) return <Navigate to="/admin" replace />;
 
   // Must have SUPER_ADMIN role
-  if (!user.roleNames.includes("SUPER_ADMIN"))
+  if (!user.roleNames.includes("SUPERADMIN"))
     return <Navigate to="/app/dashboard" replace />;
 
   return <>{children}</>;
