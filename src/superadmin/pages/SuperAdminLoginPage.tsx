@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "@/api/SuperadminApi";
+import { login, LoginResponse } from "@/api/SuperadminApi";
 import toast from "react-hot-toast";
-
-interface LoginResponse {
-  token: string;
-  name: string;
-  email: string;
-  roles: string[]; // backend sends "roles"
-}
 
 const SuperAdminLoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -37,12 +30,12 @@ const SuperAdminLoginPage: React.FC = () => {
         JSON.stringify({
           name: response.name,
           email: response.email,
-          roleNames: response.roles, // unified with normal user login
+          roleNames: response.roles, // backend sends roles[]
         })
       );
 
       // Redirect based on role
-      if (response.roles.includes("SUPER_ADMIN")) {
+      if (response.roles.includes("SUPERADMIN")) {
         navigate("/superadmin/dashboard");
       } else {
         navigate("/app/dashboard");

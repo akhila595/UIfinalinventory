@@ -35,7 +35,7 @@ api.interceptors.request.use(
         roles.some(
           (r: string) =>
             r.toUpperCase() === "SUPERADMIN" ||
-            r.toUpperCase() === "SUPER_ADMIN"
+            r.toUpperCase() === "SUPERADMIN"
         );
 
       (config.headers as any)["X-Is-SuperAdmin"] = isSuperAdmin ? "true" : "false";
