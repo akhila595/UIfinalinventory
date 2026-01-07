@@ -17,6 +17,9 @@ const SuperAdminLoginPage: React.FC = () => {
     try {
       const response: LoginResponse = await login({ email, password });
 
+      // roles are not in TS type, but backend sends them
+      const roles: string[] = (response as any).roles || [];
+
       // ❗ CLEAR EXISTING USER DATA
       localStorage.removeItem("user");
       localStorage.removeItem("userData");
@@ -30,12 +33,12 @@ const SuperAdminLoginPage: React.FC = () => {
         JSON.stringify({
           name: response.name,
           email: response.email,
-          roleNames: response.roles, // backend sends roles[]
+          roleNames: roles,
         })
       );
 
       // Redirect based on role
-      if (response.roles.includes("SUPERADMIN")) {
+      if (roles.includes("SUPERADMIN")) {
         navigate("/superadmin/dashboard");
       } else {
         navigate("/app/dashboard");
