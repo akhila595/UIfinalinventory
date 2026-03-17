@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   getMonthlyReport,
   getLowStockProducts,
-  getAllSuppliersPurchaseReport,
+  getPurchaseReport ,
 } from "@/api/reportApi";
 
 import SalesWidget from "@/components/widgets/SalesWidget";
@@ -34,7 +34,7 @@ const Dashboard: React.FC = () => {
         const [monthly, low, suppliers] = await Promise.all([
           getMonthlyReport(year, month),
           getLowStockProducts(),
-          getAllSuppliersPurchaseReport(startDate, endDate),
+          getPurchaseReport (startDate, endDate),
         ]);
 
         setMonthlyReport(monthly);
@@ -64,14 +64,12 @@ const Dashboard: React.FC = () => {
         {error}
       </div>
     );
-
-  // Compute Low Stock count (e.g., stockQty <= 5)
-  const lowStockCount = lowStock.filter(p => p.stockQty <= 5).length;
-
+    //low stock count 
+  const lowStockCount = lowStock.length;
   // Compute Active Suppliers count (unique supplier names)
-  const activeSuppliersCount = Array.from(
-    new Set(suppliersReport.map(s => s.supplierName))
-  ).length;
+  const activeSuppliersCount = new Set(
+  suppliersReport.map(s => s.supplierName)
+  ).size;
 
   return (
     <main className="flex-1 p-8 space-y-8 overflow-auto">
@@ -84,35 +82,34 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <SummaryCard
-          title="Total Sales"
-          value={`₹${monthlyReport?.totalSales ?? 0}`}
-          trend={monthlyReport?.salesGrowth}
-          trendPositive={monthlyReport?.salesGrowth >= 0}
-          titleColor="text-orange-500"
-        />
-        <SummaryCard
-          title="Total Profit"
-          value={`₹${monthlyReport?.totalProfit ?? 0}`}
-          trend={monthlyReport?.profitGrowth}
-          trendPositive={monthlyReport?.profitGrowth >= 0}
-          titleColor="text-pink-500"
-        />
-        <SummaryCard
-          title="Low Stock Items"
-          value={lowStockCount}
-          trendText="Refill Soon"
-          color="orange"
-          titleColor="text-yellow-500"
-        />
-        <SummaryCard
-          title="Active Suppliers"
-          value={activeSuppliersCount}
-          color="purple"
-          titleColor="text-green-500"
-        />
-      </div>
+       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <SummaryCard
+            title="Total Sales"
+            value={`₹${monthlyReport?.totalSales ?? 0}`}
+            titleColor="text-orange-500"
+             />
+
+             <SummaryCard
+              title="Total Profit"
+              value={`₹${monthlyReport?.totalProfit ?? 0}`}
+              titleColor="text-pink-500"
+              />
+
+             <SummaryCard
+              title="Low Stock Items"
+               value={lowStockCount}
+               trendText="Refill Soon"
+               color="orange"
+                titleColor="text-yellow-500"
+                />
+
+             <SummaryCard
+              title="Active Suppliers"
+               value={activeSuppliersCount}
+               color="purple"
+               titleColor="text-green-500"
+                />
+         </div>
 
       {/* Graph Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-[70%,30%] gap-6">
