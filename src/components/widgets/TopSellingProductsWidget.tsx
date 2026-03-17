@@ -5,6 +5,9 @@ import { getTopSellingProducts } from "@/api/reportApi";
 
 interface TopProduct {
   productName: string;
+  brandName: string;
+  sku: string;
+  attributes: string;
   quantitySold: number;
   imageUrl?: string;
 }
@@ -190,7 +193,7 @@ const TopSellingProductsWidget: React.FC<TopSellingProductsWidgetProps> = ({
         ) : (
           products.map((product, idx) => (
             <motion.div
-              key={product.productName}
+              key={product.sku}
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: idx * 0.05 }}
@@ -204,11 +207,14 @@ const TopSellingProductsWidget: React.FC<TopSellingProductsWidgetProps> = ({
                   (e.currentTarget.src = "/images/pexels-jplenio-1103970.jpg")
                 }
               />
-              <div className="flex-1">
-                <p className="font-medium text-[#0f172a] truncate">
-                  {product.productName}
-                </p>
-              </div>
+             <div className="flex-1">
+                    <p className="font-medium text-[#0f172a] truncate">
+                     {product.productName}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                    {product.attributes} • {product.sku}
+                    </p>
+             </div>
               <span className="text-sm font-semibold text-[#059669]">
                 {product.quantitySold} sold
               </span>

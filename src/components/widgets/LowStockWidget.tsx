@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 
 interface LowStockProduct {
   productName: string;
+   sku: string;
   stockQty: number;
 }
 
@@ -32,20 +33,26 @@ const LowStockWidget: React.FC<LowStockWidgetProps> = ({ products }) => {
           </p>
         ) : (
           products.map((item, index) => (
-            <motion.div
-              key={item.productName}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.04 }}
-              className="flex justify-between items-center p-3 rounded-xl bg-white/60 border border-[#dbeeff] hover:bg-white/70 transition shadow-sm"
-            >
-              <span className="font-medium text-[#0f172a] truncate">
-                {item.productName}
-              </span>
-              <span className="text-sm font-semibold text-red-500">
-                {item.stockQty} left
-              </span>
-            </motion.div>
+              <motion.div
+                 key={item.sku}
+                 initial={{ opacity: 0, y: 6 }}
+                 animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.04 }}
+                  className="flex justify-between items-center p-3 rounded-xl bg-white/60 border border-[#dbeeff] hover:bg-white/70 transition shadow-sm"
+                  >
+                 <div className="flex flex-col">
+                 <span className="font-medium text-[#0f172a] truncate">
+                 {item.productName}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                  {item.sku}
+                  </span>
+                  </div>
+
+                 <span className="text-sm font-semibold text-red-500">
+                   {item.stockQty} left
+                        </span>
+              </motion.div>
           ))
         )}
       </div>

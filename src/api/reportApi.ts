@@ -12,8 +12,8 @@ export const getCategoryReport = async (startDate: string, endDate: string) =>
 export const getSupplierReport = async (supplierId: number, startDate: string, endDate: string) =>
   (await axios.get(`/api/reports/supplier/${supplierId}`, { params: { startDate, endDate } })).data;
 
-export const getAllSuppliersPurchaseReport = async (startDate: string, endDate: string) =>
-  (await axios.get(`/api/reports/suppliers`, { params: { startDate, endDate } })).data;
+export const getPurchaseReport  = async (startDate: string, endDate: string) =>
+  (await axios.get(`/api/reports/purchases`, { params: { startDate, endDate } })).data;
 
 export const getTopSellingProducts = async (startDate: string, endDate: string, limit = 5) =>
   (await axios.get(`/api/reports/top-selling`, { params: { startDate, endDate, limit } })).data;

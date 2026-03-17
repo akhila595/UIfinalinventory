@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DatePicker, Table, message } from "antd";
 import dayjs, { Dayjs } from "dayjs";
 import { Search, Download } from "lucide-react";
-import { getAllSuppliersPurchaseReport } from "@/api/reportApi";
+import { getPurchaseReport  } from "@/api/reportApi";
 import { exportToCSV } from "@/utils/csv";
 
 const { RangePicker } = DatePicker;
@@ -25,7 +25,7 @@ const SuppliersPurchaseReport: React.FC = () => {
     if (!start || !end) { message.warning("Please select a date range"); return; }
     setLoading(true);
     try {
-      const res = await getAllSuppliersPurchaseReport(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
+      const res = await getPurchaseReport(start.format("YYYY-MM-DD"), end.format("YYYY-MM-DD"));
       setRows(res || []);
     } catch {
       message.error("Failed to load Suppliers Purchase Report");

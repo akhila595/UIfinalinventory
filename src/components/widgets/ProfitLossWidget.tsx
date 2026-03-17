@@ -158,7 +158,7 @@ const ProfitLossWidget: React.FC<ProfitLossWidgetProps> = ({
                 labelLine={false}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={index} fill={COLORS[index]} />
+                  <Cell key={entry.name} fill={COLORS[index]} />
                 ))}
               </Pie>
               <Tooltip
