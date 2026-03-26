@@ -1,34 +1,70 @@
 import axios from "@/api/axios";
 
-/**
- * Add new stock-in record with image upload (multipart form data)
- */
-export const stockIn = async (formData: FormData) => {
-  const response = await axios.post("/api/stock-in", formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
+/* =====================================================
+   STOCK IN
+===================================================== */
+
+export const stockIn = async (data: any) => {
+  const response = await axios.post("/api/stock", data);
   return response.data;
 };
 
-/**
- * Record stock-out (JSON request)
- */
+
+/* =====================================================
+   STOCK OUT
+===================================================== */
+
 export const stockOut = async (data: any) => {
-  const response = await axios.post("/api/stock-out", data);
+  const response = await axios.post("/api/stock/out", data);
   return response.data;
 };
 
-/**
- * Fetch recent stock-in history
- */
+
+/* =====================================================
+   RECENT STOCK IN
+===================================================== */
+
 export const getRecentStockIns = async () => {
-  const response = await axios.get("/api/recent-stock-ins");
+  const response = await axios.get("/api/stock/recent-ins");
   return response.data;
 };
+
+
+/* =====================================================
+   RECENT STOCK OUT
+===================================================== */
 
 export const getRecentStockOuts = async () => {
-  const response = await axios.get("/api/recent-stock-outs");
+  const response = await axios.get("/api/stock/recent-outs");
   return response.data;
+};
+
+
+/* =====================================================
+   PRODUCTS
+===================================================== */
+
+export const getAllProducts = async () => {
+  const res = await axios.get("/api/products");
+  return res.data.data || [];
+};
+
+
+/* =====================================================
+   PRODUCT ATTRIBUTES
+===================================================== */
+
+export const getProductAttributes = async (productId: number) => {
+  const res = await axios.get(`/api/product-attributes/product/${productId}`);
+  return res.data || [];
+};
+
+
+/* =====================================================
+   ATTRIBUTE VALUES
+===================================================== */
+
+export const getAttributeValues = async (attributeId: number) => {
+  const res = await axios.get(`/api/attribute-values/attribute/${attributeId}`);
+  return res.data || [];
 };

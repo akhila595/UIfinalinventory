@@ -62,15 +62,24 @@ const SalesWidget: React.FC<SalesWidgetProps> = ({ data }) => {
           resData = await getYearlyReport(year);
         }
 
-        if (resData) {
-          const aggregated: Record<string, number> = {};
-          resData.productSales.forEach((sale: any) =>
-            aggregated[sale.productName] = (aggregated[sale.productName] || 0) + sale.quantity
-          );
-          setSalesData(
-            Object.entries(aggregated).map(([name, sales]) => ({ name, sales }))
-          );
-        }
+           if (resData) {
+                 const aggregated: Record<string, { name: string; sales: number }> = {};
+
+                 resData.productSales.forEach((sale: any) => {
+                   const key = sale.sku;
+
+                   if (!aggregated[key]) {
+                     aggregated[key] = {
+                     name: `${sale.productName} (${sale.sku})`,
+                     sales: 0,
+                     };
+                    }
+
+                    aggregated[key].sales += sale.quantity;
+                  });
+
+              setSalesData(Object.values(aggregated));
+           }
       } catch {
         setError("Failed to load sales data.");
       } finally {

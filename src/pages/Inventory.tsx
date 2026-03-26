@@ -1,86 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { message, Modal, Input, Select, Table } from "antd";
-import type { TableProps } from "antd";
 import { motion } from "framer-motion";
-import {
-  getAllProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} from "@/api/productApi";
-import { ProductDTO } from "@/types/productTypes";
-import {
-  PlusCircle,
-  RefreshCcw,
-  FileDown,
-  Search,
-  Filter,
-  Lock,
-} from "lucide-react";
+import { getAllProducts } from "@/api/productApi";
+import { PlusCircle, Search, Package } from "lucide-react";
+import ProductForm from "@/components/forms/ProductForm";
 
-const { Option } = Select;
+interface ProductDTO {
+  id?: number;
+  name: string;
+  code: string;
+  imageUrl?: string;
+  brandName?: string;
+  categoryName?: string;
+}
 
 const InventoryPage: React.FC = () => {
   const [products, setProducts] = useState<ProductDTO[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<ProductDTO[]>([]);
-  const [patterns, setPatterns] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<ProductDTO | null>(null);
-  const [formData, setFormData] = useState<ProductDTO>({
-    productName: "",
-    designCode: "",
-    pattern: "",
-  });
+  const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
-  // ✅ Load permissions from localStorage
-  const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-  const permissions: string[] = userData.permissions || [];
-
-  const hasPermission = (code: string) => permissions.includes(code);
-
-  // ✅ Permission flags
-  const canView = hasPermission("PRODUCT_VIEW");
-  const canAdd = hasPermission("PRODUCT_ADD");
-  const canEdit = hasPermission("PRODUCT_EDIT");
-  const canDelete = hasPermission("PRODUCT_DELETE");
-
-  // ❌ If user cannot view products — block entirely
-  if (!canView) {
-    return (
-      <div className="flex flex-col items-center justify-center h-screen text-gray-600">
-        <Lock size={50} className="text-red-500 mb-4" />
-        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
-        <p className="text-gray-500">
-          You do not have permission to view this page.
-        </p>
-      </div>
-    );
-  }
-
-  // ✅ Fetch products
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const res = await getAllProducts();
       setProducts(res.data);
       setFilteredProducts(res.data);
-
-      const uniquePatterns = Array.from(
-        new Set(
-          res.data.map((p: ProductDTO): string =>
-            (p.pattern ?? "").toString().trim()
-          )
-        )
-      ).filter((p): p is string => p !== "");
-
-      setPatterns(uniquePatterns);
-    } catch {
-      message.error("Failed to fetch products");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -88,250 +36,122 @@ const InventoryPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    let filtered = products;
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (p) =>
-          p.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          p.designCode.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-    if (categoryFilter && categoryFilter !== "All") {
-      filtered = filtered.filter((p) => p.pattern === categoryFilter);
-    }
+    const filtered = products.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
     setFilteredProducts(filtered);
-  }, [searchTerm, categoryFilter, products]);
+  }, [searchTerm, products]);
 
-  // ✅ CRUD actions
-  const openModal = (product?: ProductDTO) => {
-    setEditingProduct(product || null);
-    setFormData(product || { productName: "", designCode: "", pattern: "" });
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    try {
-      if (editingProduct) {
-        if (!canEdit) {
-          message.warning("You don’t have permission to edit products.");
-          return;
-        }
-        await updateProduct(editingProduct.id!, formData);
-        message.success("Product updated successfully");
-      } else {
-        if (!canAdd) {
-          message.warning("You don’t have permission to add products.");
-          return;
-        }
-        await createProduct(formData);
-        message.success("Product created successfully");
-      }
-      setIsModalOpen(false);
-      fetchProducts();
-    } catch {
-      message.error("Failed to save product");
-    }
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!canDelete) {
-      message.warning("You don’t have permission to delete products.");
-      return;
-    }
-
-    try {
-      await deleteProduct(id);
-      message.success("Product deleted successfully");
-      fetchProducts();
-    } catch {
-      message.error("Failed to delete product");
-    }
-  };
-
-  const handleExportCSV = () => {
-    const csvRows = [
-      ["Name", "Design Code", "Pattern"],
-      ...filteredProducts.map((p) => [p.productName, p.designCode, p.pattern]),
-    ];
-    const blob = new Blob([csvRows.map((r) => r.join(",")).join("\n")], {
-      type: "text/csv",
-    });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "products.csv";
-    a.click();
-  };
-
-  // ✅ Columns (Actions depend on permission)
-  const columns: TableProps<ProductDTO>["columns"] = [
-    {
-      title: "Product Name",
-      dataIndex: "productName",
-      key: "productName",
-      render: (text: string) => (
-        <span className="font-semibold text-gray-800">{text}</span>
-      ),
-    },
-    {
-      title: "Design Code",
-      dataIndex: "designCode",
-      key: "designCode",
-      render: (text: string) => (
-        <span className="text-indigo-600 font-medium">{text}</span>
-      ),
-    },
-    {
-      title: "Pattern",
-      dataIndex: "pattern",
-      key: "pattern",
-      render: (text: string) => (
-        <span className="text-gray-700 font-medium">{text}</span>
-      ),
-    },
-  ];
-
-  // ✅ Add Actions column only if edit/delete permissions exist
-  if (canEdit || canDelete) {
-    columns.push({
-      title: "Actions",
-      key: "actions",
-      render: (_: any, record: ProductDTO) => (
-        <div className="flex gap-2">
-          {canEdit && (
-            <button
-              onClick={() => openModal(record)}
-              className="px-3 py-1 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-md shadow-sm transition"
-            >
-              Edit
-            </button>
-          )}
-          {canDelete && (
-            <button
-              onClick={() => handleDelete(record.id!)}
-              className="px-3 py-1 text-sm bg-red-600 hover:bg-red-700 text-white rounded-md shadow-sm transition"
-            >
-              Delete
-            </button>
-          )}
-        </div>
-      ),
-    });
-  }
-
-  // ✅ UI
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="p-8 bg-gradient-to-br from-indigo-50 to-white min-h-screen"
-    >
+    <motion.div className="p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-indigo-800 tracking-tight">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+          <Package className="text-indigo-600" />
           Inventory Management
         </h1>
 
-        <div className="flex gap-3">
-          {canAdd && (
-            <button
-              onClick={() => openModal()}
-              className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-md transition"
-            >
-              <PlusCircle size={18} />
-              Add Product
-            </button>
-          )}
-          <button
-            onClick={fetchProducts}
-            className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow-md transition"
-          >
-            <RefreshCcw size={18} />
-            Refresh
-          </button>
-          <button
-            onClick={handleExportCSV}
-            className="flex items-center gap-2 bg-amber-500 text-white px-4 py-2 rounded-lg hover:bg-amber-600 shadow-md transition"
-          >
-            <FileDown size={18} />
-            Export CSV
-          </button>
-        </div>
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+        >
+          <PlusCircle size={18} />
+          Add Product
+        </button>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-4">
-        <div className="flex items-center w-full sm:w-1/2 bg-white shadow-sm border border-indigo-100 rounded-lg px-3 py-2">
-          <Search size={18} className="text-gray-500 mr-2" />
-          <Input
-            placeholder="Search..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            bordered={false}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Filter size={18} className="text-indigo-600" />
-          <Select
-            value={categoryFilter || "All"}
-            onChange={(value) => setCategoryFilter(value)}
-            className="w-48"
-          >
-            <Option value="All">All Patterns</Option>
-            {patterns.map((pattern, index) => (
-              <Option key={index} value={pattern}>
-                {pattern}
-              </Option>
-            ))}
-          </Select>
-        </div>
+      {/* Search */}
+      <div className="flex items-center bg-white border rounded-lg px-4 py-2 mb-6 shadow-sm w-full md:w-1/2">
+        <Search className="text-gray-500" size={20} />
+        <input
+          type="text"
+          placeholder="Search products..."
+          className="flex-1 outline-none px-2"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-lg border border-indigo-100 overflow-hidden">
-        <Table
-          columns={columns}
-          dataSource={filteredProducts}
-          loading={loading}
-          rowKey="id"
-          pagination={{ pageSize: 8 }}
-        />
+      <div className="overflow-x-auto bg-white rounded-lg shadow-md border">
+        <table className="w-full border-collapse">
+          <thead className="bg-gradient-to-r from-indigo-600 to-violet-500 text-white">
+            <tr>
+              <th className="p-3 text-left">#</th>
+              <th className="p-3 text-left">Product</th>
+              <th className="p-3 text-left">Brand</th>
+              <th className="p-3 text-left">Category</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="text-center py-6">
+                  Loading...
+                </td>
+              </tr>
+            ) : filteredProducts.length > 0 ? (
+              filteredProducts.map((p, i) => (
+                <tr key={p.id} className="border-b hover:bg-indigo-50">
+                  <td className="p-3">{i + 1}</td>
+
+                  <td className="p-3">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={
+                          p.imageUrl
+                            ? `${import.meta.env.VITE_API_BASE_URL}${p.imageUrl}`
+                            : "/placeholder.png"
+                        }
+                        className="w-12 h-12 rounded object-cover border"
+                      />
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {p.name}
+                        </p>
+                        <p className="text-xs text-gray-500">{p.code}</p>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td className="p-3">{p.brandName || "-"}</td>
+                  <td className="p-3">{p.categoryName || "-"}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={4} className="text-center py-6 text-gray-500">
+                  No products available
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Modal */}
-      <Modal
-        title={editingProduct ? "Edit Product" : "Add Product"}
-        open={isModalOpen}
-        onOk={handleSave}
-        onCancel={() => setIsModalOpen(false)}
-      >
-        <Input
-          placeholder="Product Name"
-          value={formData.productName}
-          onChange={(e) =>
-            setFormData({ ...formData, productName: e.target.value })
-          }
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Design Code"
-          value={formData.designCode}
-          onChange={(e) =>
-            setFormData({ ...formData, designCode: e.target.value })
-          }
-          style={{ marginBottom: 10 }}
-        />
-        <Input
-          placeholder="Pattern"
-          value={formData.pattern}
-          onChange={(e) =>
-            setFormData({ ...formData, pattern: e.target.value })
-          }
-          style={{ marginBottom: 10 }}
-        />
-      </Modal>
+      {open && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto relative">
+            <button
+              onClick={() => setOpen(false)}
+              className="absolute top-4 right-6 text-3xl"
+            >
+              &times;
+            </button>
+
+            <ProductForm
+              open={open}
+              onClose={() => setOpen(false)}
+              onSuccess={() => {
+                setOpen(false);
+                fetchProducts();
+              }}
+            />
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
