@@ -68,3 +68,9 @@ export const getAttributeValues = async (attributeId: number) => {
   const res = await axios.get(`/api/attribute-values/attribute/${attributeId}`);
   return res.data || [];
 };
+
+
+export const getVariantsByProduct = async (productId: number) => {
+  const res = await axios.get(`/api/products/variants/${productId}`);
+  return res.data || [];
+};
