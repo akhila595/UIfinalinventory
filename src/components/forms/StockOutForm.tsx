@@ -14,7 +14,6 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
 
-  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
   const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
 
   const [form, setForm] = useState({
@@ -51,7 +50,6 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
   ) => {
     const productId = Number(e.target.value);
 
-    setSelectedProduct(productId);
     setSelectedVariant(null);
 
     try {
@@ -188,7 +186,7 @@ const StockOutForm: React.FC<StockOutFormProps> = ({ onSuccess }) => {
 
             {variants.map((v) => (
               <option key={v.variantId} value={v.variantId}>
-                {v.sku}
+                {v.variantLabel} ({v.sku})
               </option>
             ))}
           </select>
