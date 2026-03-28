@@ -5,23 +5,24 @@ import {
   PackageSearch,
   TrendingUp,
   Users,
+  Layers,
 } from "lucide-react";
 
 // REPORT COMPONENTS
 import CategoryReport from "@/components/Reports/CategoryReport";
 import BrandsReport from "@/components/Reports/BrandsReport";
-import ClothTypesReport from "@/components/Reports/ClothTypesReport";
 import TopSellingReport from "@/components/Reports/TopSellingReport";
 import LowStockReport from "@/components/Reports/LowStockReport";
 import SuppliersPurchaseReport from "@/components/Reports/SuppliersPurchaseReport";
+import AttributesReport from "@/components/Reports/AttributesReport";
 
 type ReportKey =
   | "category"
   | "brand"
-  | "clothType"
   | "topSelling"
   | "lowStock"
-  | "suppliers";
+  | "suppliers"
+  | "attributes";
 
 const tabs: {
   key: ReportKey;
@@ -29,13 +30,42 @@ const tabs: {
   icon: React.ReactNode;
   desc: string;
 }[] = [
-  { key: "category", label: "Category Report", icon: <Grid />, desc: "View all product categories" },
-  { key: "brand", label: "Brand Report", icon: <Grid />, desc: "View available brands" },
-  { key: "clothType", label: "Cloth Type Report", icon: <Grid />, desc: "View product cloth types" },
-
-  { key: "topSelling", label: "Top Selling Products", icon: <TrendingUp />, desc: "Filter by date, brand, pattern" },
-  { key: "lowStock", label: "Low Stock", icon: <PackageSearch />, desc: "Current inventory low stock" },
-  { key: "suppliers", label: "Suppliers Purchase", icon: <Users />, desc: "Purchase history by date" },
+  {
+    key: "category",
+    label: "Category Report",
+    icon: <Grid />,
+    desc: "View all product categories",
+  },
+  {
+    key: "brand",
+    label: "Brand Report",
+    icon: <Grid />,
+    desc: "View available brands",
+  },
+  {
+    key: "topSelling",
+    label: "Top Selling Products",
+    icon: <TrendingUp />,
+    desc: "View best selling product variants",
+  },
+  {
+    key: "lowStock",
+    label: "Low Stock",
+    icon: <PackageSearch />,
+    desc: "Products running low in inventory",
+  },
+  {
+    key: "suppliers",
+    label: "Suppliers Purchase",
+    icon: <Users />,
+    desc: "Purchase history from suppliers",
+  },
+  {
+    key: "attributes",
+    label: "Attributes Report",
+    icon: <Layers />,
+    desc: "View attributes and their values",
+  },
 ];
 
 const ReportsPage: React.FC = () => {
@@ -43,7 +73,7 @@ const ReportsPage: React.FC = () => {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold text-indigo-800 flex items-center gap-2">
@@ -71,6 +101,7 @@ const ReportsPage: React.FC = () => {
               </span>
               {t.label}
             </div>
+
             <p
               className={`text-sm mt-1 ${
                 active === t.key ? "text-indigo-100" : "text-gray-500"
@@ -86,11 +117,10 @@ const ReportsPage: React.FC = () => {
       <div className="bg-white rounded-2xl shadow-md border border-indigo-100 p-4">
         {active === "category" && <CategoryReport />}
         {active === "brand" && <BrandsReport />}
-        {active === "clothType" && <ClothTypesReport />}
-
         {active === "topSelling" && <TopSellingReport />}
         {active === "lowStock" && <LowStockReport />}
         {active === "suppliers" && <SuppliersPurchaseReport />}
+        {active === "attributes" && <AttributesReport />}
       </div>
     </div>
   );

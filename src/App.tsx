@@ -13,8 +13,8 @@ import SupplierPage from "@/pages/Suppliers";
 import ReportsPage from "@/pages/Reports";
 import UserRolesPage from "@/pages/UserRolesMain";
 import ManageUserPage from "@/pages/UserList";
-/*import SettingsPage from "@/pages/Settings";
-import HelpPage from "@/pages/Help";
+import SettingsPage from "@/pages/Settings";
+/*import HelpPage from "@/pages/Help";
 import NotificationsPage from "@/pages/Notifications";
 */
 
@@ -39,8 +39,8 @@ const App: React.FC = () => {
           <Route path="reports" element={<ReportsPage />} />
           <Route path="user-roles" element={<UserRolesPage />} />
           <Route path="users" element={<ManageUserPage />} />
-            {/*<Route path="settings" element={<SettingsPage />} />
-          <Route path="help" element={<HelpPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          {/*<Route path="help" element={<HelpPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           
 

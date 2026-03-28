@@ -77,7 +77,7 @@ const Sidebar: React.FC = () => {
     { name: "Supplier", icon: <Truck size={22} />, path: "/app/supplier", permission: "SUPPLIER_VIEW" },
     { name: "Manage Users", icon: <Users size={22} />, path: "/app/users", permission: "USER_VIEW" },
     { name: "User Roles", icon: <User size={22} />, path: "/app/user-roles", permission: "ROLE_MANAGE" },
-    { name: "Settings", icon: <Settings size={22} />, path: "/app/settings", permission: "SYSTEM_SETTINGS_EDIT" },
+    { name: "Settings", icon: <Settings size={22} />, path: "/app/settings", permission: null },
   ];
 
   const handleLogout = () => {

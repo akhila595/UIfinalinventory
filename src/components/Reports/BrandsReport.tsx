@@ -25,17 +25,21 @@ const BrandsReport: React.FC = () => {
   useEffect(() => {
     setFiltered(
       brands.filter((b) =>
-        b.brand.toLowerCase().includes(search.toLowerCase())
+        (b.brand || "").toLowerCase().includes(search.toLowerCase())
       )
     );
   }, [search, brands]);
 
   const exportCSV = () => {
     const rows = [["Brand Name"], ...filtered.map((b) => [b.brand])];
-    const blob = new Blob([rows.map((r) => r.join(",")).join("\n")], {
-      type: "text/csv",
-    });
+
+    const blob = new Blob(
+      [rows.map((r) => r.join(",")).join("\n")],
+      { type: "text/csv" }
+    );
+
     const url = window.URL.createObjectURL(blob);
+
     const a = document.createElement("a");
     a.href = url;
     a.download = "brands_report.csv";
@@ -44,10 +48,13 @@ const BrandsReport: React.FC = () => {
 
   return (
     <div>
+
       {/* Search + Export */}
       <div className="flex justify-between mb-4">
+
         <div className="flex items-center bg-white border rounded-lg px-3 py-1 shadow-sm">
           <Search size={18} className="text-gray-500" />
+
           <input
             placeholder="Search brands..."
             className="outline-none px-2"
@@ -62,15 +69,22 @@ const BrandsReport: React.FC = () => {
         >
           <FileDown size={18} /> Export CSV
         </button>
+
       </div>
 
       {/* Table */}
       <Table
         dataSource={filtered}
         rowKey="id"
-        columns={[{ title: "Brand Name", dataIndex: "brand" }]}
+        columns={[
+          {
+            title: "Brand Name",
+            dataIndex: "brand",
+          },
+        ]}
         pagination={{ pageSize: 10 }}
       />
+
     </div>
   );
 };

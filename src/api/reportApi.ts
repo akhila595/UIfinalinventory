@@ -1,39 +1,103 @@
 import axios from "@/api/axios";
 
-export const getDailyReport = async (date: string) =>
-  (await axios.get(`/api/reports/daily`, { params: { date } })).data;
+/* =========================
+   DAILY REPORT
+========================= */
 
-export const getMonthlyReport = async (year: number, month: number) =>
-  (await axios.get(`/api/reports/monthly`, { params: { year, month } })).data;
+export const getDailyReport = async (date: string) => {
+  const res = await axios.get("/api/reports/daily", { params: { date } });
+  return res.data;
+};
 
-export const getCategoryReport = async (startDate: string, endDate: string) =>
-  (await axios.get(`/api/reports/category`, { params: { startDate, endDate } })).data;
 
-export const getSupplierReport = async (supplierId: number, startDate: string, endDate: string) =>
-  (await axios.get(`/api/reports/supplier/${supplierId}`, { params: { startDate, endDate } })).data;
+/* =========================
+   MONTHLY REPORT
+========================= */
 
-export const getPurchaseReport  = async (startDate: string, endDate: string) =>
-  (await axios.get(`/api/reports/purchases`, { params: { startDate, endDate } })).data;
+export const getMonthlyReport = async (year: number, month: number) => {
+  const res = await axios.get("/api/reports/monthly", {
+    params: { year, month },
+  });
+  return res.data;
+};
 
-export const getTopSellingProducts = async (startDate: string, endDate: string, limit = 5) =>
-  (await axios.get(`/api/reports/top-selling`, { params: { startDate, endDate, limit } })).data;
 
-export const getLowStockProducts = async () =>
-  (await axios.get(`/api/reports/low-stock`)).data;
+/* =========================
+   WEEKLY REPORT
+========================= */
 
-export const getWeeklyReport = async (startDate: string, endDate: string) =>
-  (await axios.get(`/api/reports/weekly`, { params: { startDate, endDate } })).data;
+export const getWeeklyReport = async (startDate: string, endDate: string) => {
+  const res = await axios.get("/api/reports/weekly", {
+    params: { startDate, endDate },
+  });
+  return res.data;
+};
 
-export const getYearlyReport = async (year: number) =>
-  (await axios.get(`/api/reports/yearly`, { params: { year } })).data;
 
-export const getSupplierPurchaseHistory = async (
-  supplierId: number,
+/* =========================
+   YEARLY REPORT
+========================= */
+
+export const getYearlyReport = async (year: number) => {
+  const res = await axios.get("/api/reports/yearly", {
+    params: { year },
+  });
+  return res.data;
+};
+
+
+/* =========================
+   CATEGORY REPORT
+========================= */
+
+export const getCategoryReport = async (startDate: string, endDate: string) => {
+  const res = await axios.get("/api/reports/category", {
+    params: { startDate, endDate },
+  });
+  return res.data;
+};
+
+
+/* =========================
+   TOP SELLING PRODUCTS
+========================= */
+
+export const getTopSellingProducts = async (
   startDate: string,
-  endDate: string
-) =>
-  (
-    await axios.get(`/api/reports/supplier/${supplierId}`, {
-      params: { startDate, endDate },
-    })
-  ).data;
+  endDate: string,
+  limit = 5
+) => {
+  const res = await axios.get("/api/reports/top-selling", {
+    params: { startDate, endDate, limit },
+  });
+  return res.data;
+};
+
+
+/* =========================
+   LOW STOCK PRODUCTS
+========================= */
+
+export const getLowStockProducts = async (threshold = 10) => {
+  const res = await axios.get("/api/reports/low-stock", {
+    params: { threshold },
+  });
+  return res.data;
+};
+
+
+/* =========================
+   PURCHASE REPORT
+========================= */
+
+export const getPurchaseReport = async (startDate: string, endDate: string) => {
+  const res = await axios.get("/api/reports/purchases", {
+    params: { startDate, endDate },
+  });
+  return res.data;
+};
+
+
+
+export const getAttributesReport = async () =>
+  (await axios.get("/api/master/attributes-with-values")).data;

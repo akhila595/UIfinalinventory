@@ -1,20 +1,73 @@
 import axios from "@/api/axios";
 
-export const getCategories = async () => (await axios.get("/api/categories")).data;
-export const createCategory = async (data: any) => (await axios.post("/api/categories/create", data)).data;
+/* ======================================
+   CATEGORIES
+====================================== */
 
-export const getBrands = async () => (await axios.get("/api/brands")).data;
-export const createBrand = async (data: any) => (await axios.post("/api/brands/create", data)).data;
+export const getCategories = async () =>
+  (await axios.get("/api/master/categories")).data;
 
-export const getClothTypes = async () => (await axios.get("/api/cloth-types")).data;
-export const createClothType = async (data: any) => (await axios.post("/api/cloth-types/create", data)).data;
+export const createCategory = async (data: any) =>
+  (await axios.post("/api/master/categories", data)).data;
 
-export const getColors = async () => (await axios.get("/api/colors")).data;
-export const createColor = async (data: any) => (await axios.post("/api/colors/create", data)).data;
+export const deleteCategory = async (id: number) =>
+  (await axios.delete(`/api/master/categories/${id}`)).data;
 
-export const getSizes = async () => (await axios.get("/api/sizes")).data;
-export const createSize = async (data: any) => (await axios.post("/api/sizes/create", data)).data;
 
-export const getSuppliers = async () => {
-  return (await axios.get("/api/suppliers")).data;
+/* ======================================
+   BRANDS
+====================================== */
+
+export const getBrands = async () =>
+  (await axios.get("/api/master/brands")).data;
+
+export const createBrand = async (data: any) =>
+  (await axios.post("/api/master/brands", data)).data;
+
+export const deleteBrand = async (id: number) =>
+  (await axios.delete(`/api/master/brands/${id}`)).data;
+
+
+/* ======================================
+   ATTRIBUTES
+====================================== */
+
+export const getAttributes = async () =>
+  (await axios.get("/api/master/attributes")).data;
+
+export const createAttribute = async (data: any) =>
+  (await axios.post("/api/master/attributes", data)).data;
+
+export const deleteAttribute = async (id: number) =>
+  (await axios.delete(`/api/master/attributes/${id}`)).data;
+
+
+/* ======================================
+   ATTRIBUTE VALUES
+====================================== */
+
+export const getAttributeValues = async (attributeId: number) =>
+  (await axios.get(`/api/master/attribute-values/${attributeId}`)).data;
+
+export const createAttributeValue = async (data: any) =>
+  (await axios.post("/api/master/attribute-values", data)).data;
+
+export const deleteAttributeValue = async (id: number) =>
+  (await axios.delete(`/api/master/attribute-values/${id}`)).data;
+
+
+/* ======================================
+   SUPPLIERS
+====================================== */
+
+export const getSuppliers = async () =>
+  (await axios.get("/api/suppliers")).data;
+
+/*========================================
+attributeteswithvalues
+========================================*/
+
+export const getAttributesWithValues = async () => {
+  const res = await axios.get("/api/master/attributes-with-values");
+  return res.data || [];
 };

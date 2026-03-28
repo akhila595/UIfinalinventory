@@ -8,7 +8,7 @@ import {
   updateSupplier,
   deleteSupplier,
 } from "@/api/supplierApi";
-import { getSupplierPurchaseHistory } from "@/api/reportApi";
+import { getPurchaseReport } from "@/api/reportApi";
 
 const SupplierPage: React.FC = () => {
   const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -29,13 +29,11 @@ const SupplierPage: React.FC = () => {
     notes: "",
   });
 
-  // History Drawer State
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  // ✅ Load permissions
   const userData = JSON.parse(localStorage.getItem("userData") || "{}");
   const permissions: string[] = userData.permissions || [];
 
@@ -46,7 +44,6 @@ const SupplierPage: React.FC = () => {
   const canEdit = hasPermission("SUPPLIER_EDIT");
   const canDelete = hasPermission("SUPPLIER_DELETE");
 
-  // ❌ Block access if no view permission
   if (!canView) {
     return (
       <div className="flex flex-col items-center justify-center h-screen text-gray-600">
@@ -117,6 +114,7 @@ const SupplierPage: React.FC = () => {
         await createSupplier(formData);
         message.success("Supplier added successfully");
       }
+
       setModalOpen(false);
       fetchData();
     } catch {
@@ -139,7 +137,6 @@ const SupplierPage: React.FC = () => {
     }
   };
 
-  // Purchase History Drawer
   const openHistory = async (supplier: any) => {
     setSelectedSupplier(supplier);
     setHistoryOpen(true);
@@ -148,16 +145,18 @@ const SupplierPage: React.FC = () => {
     try {
       const today = new Date();
       const endDate = today.toISOString().split("T")[0];
+
       const past = new Date();
       past.setMonth(today.getMonth() - 1);
       const startDate = past.toISOString().split("T")[0];
 
-      const res = await getSupplierPurchaseHistory(
-        supplier.supplierId,
-        startDate,
-        endDate
+      const res = await getPurchaseReport(startDate, endDate);
+
+      const filtered = res.filter(
+        (item: any) => item.supplierId === supplier.supplierId
       );
-      setHistoryData(res);
+
+      setHistoryData(filtered);
     } catch {
       message.error("Failed to fetch purchase history");
     }
@@ -165,7 +164,6 @@ const SupplierPage: React.FC = () => {
     setHistoryLoading(false);
   };
 
-  // ✅ Table columns based on permissions
   const columns: any[] = [
     { title: "Name", dataIndex: "supplierName" },
     { title: "Contact Person", dataIndex: "contactPerson" },
@@ -181,22 +179,24 @@ const SupplierPage: React.FC = () => {
           {canEdit && (
             <button
               onClick={() => openModal(record)}
-              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md transition"
+              className="px-2 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md"
             >
               <Pencil size={14} />
             </button>
           )}
+
           {canDelete && (
             <button
               onClick={() => handleDelete(record.supplierId)}
-              className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md transition"
+              className="px-2 py-1 bg-red-600 hover:bg-red-700 text-white rounded-md"
             >
               <Trash2 size={14} />
             </button>
           )}
+
           <button
             onClick={() => openHistory(record)}
-            className="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md transition flex items-center gap-1"
+            className="px-2 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-md flex items-center gap-1"
           >
             <History size={14} /> History
           </button>
@@ -210,53 +210,56 @@ const SupplierPage: React.FC = () => {
 
   return (
     <div className="p-6 min-h-screen bg-gray-50">
-      {/* Header */}
+
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-indigo-800">Supplier Management</h1>
+        <h1 className="text-3xl font-bold text-indigo-800">
+          Supplier Management
+        </h1>
+
         <div className="flex gap-3">
           {canCreate && (
             <button
               onClick={() => openModal()}
-              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg shadow transition"
+              className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg"
             >
               <UserPlus size={18} /> Add Supplier
             </button>
           )}
+
           <button
             onClick={fetchData}
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
           >
             <RefreshCcw size={18} /> Refresh
           </button>
         </div>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <div className="bg-white shadow-sm hover:shadow-md border border-indigo-100 rounded-xl p-5 transition">
+        <div className="bg-white shadow-sm border rounded-xl p-5">
           <p className="text-sm text-gray-500">Total Suppliers</p>
-          <p className="text-2xl font-bold text-indigo-700 mt-1">{totalSuppliers}</p>
+          <p className="text-2xl font-bold text-indigo-700">{totalSuppliers}</p>
         </div>
 
-        <div className="bg-white shadow-sm hover:shadow-md border border-indigo-100 rounded-xl p-5 transition">
+        <div className="bg-white shadow-sm border rounded-xl p-5">
           <p className="text-sm text-gray-500">Suppliers With Phone Number</p>
-          <p className="text-2xl font-bold text-indigo-700 mt-1">{suppliersWithPhone}</p>
+          <p className="text-2xl font-bold text-indigo-700">
+            {suppliersWithPhone}
+          </p>
         </div>
       </div>
 
-      {/* Search */}
       <div className="flex items-center bg-white border rounded-lg px-4 py-2 mb-6 shadow-sm w-full md:w-1/2">
         <Search size={18} className="text-gray-500" />
         <input
           type="text"
           placeholder="Search supplier..."
-          className="flex-1 px-2 outline-none text-gray-700"
+          className="flex-1 px-2 outline-none"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
 
-      {/* Table */}
       <div className="bg-white rounded-xl shadow-md border overflow-hidden">
         <Table
           columns={columns}
@@ -267,7 +270,6 @@ const SupplierPage: React.FC = () => {
         />
       </div>
 
-      {/* Modal */}
       <SupplierFormModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -276,31 +278,26 @@ const SupplierPage: React.FC = () => {
         setFormData={setFormData}
       />
 
-      {/* History Drawer */}
       {historyOpen && (
-        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-end z-50">
+        <div className="fixed inset-0 bg-black/30 flex justify-end z-50">
           <div className="bg-white w-full sm:w-[420px] h-full shadow-xl p-6 overflow-y-auto">
+
             <h2 className="text-xl font-bold text-indigo-700 mb-4">
-              {selectedSupplier?.supplierName} - Purchase History (Last 30 Days)
+              {selectedSupplier?.supplierName} - Purchase History
             </h2>
 
             {historyLoading ? (
-              <p className="text-gray-500">Loading...</p>
+              <p>Loading...</p>
             ) : historyData.length === 0 ? (
               <p className="text-gray-500 italic">No purchases found</p>
             ) : (
               <div className="space-y-3">
                 {historyData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-gray-50 border rounded-lg hover:bg-indigo-50 transition"
-                  >
-                    <p className="font-semibold text-gray-800">{item.productName}</p>
-                    <p className="text-sm text-gray-600">Date: {item.purchaseDate}</p>
-                    <p className="text-sm text-gray-600">Qty: {item.quantity}</p>
-                    <p className="text-sm text-gray-600">
-                      Price: ₹ {item.thresholdPrice}
-                    </p>
+                  <div key={index} className="p-3 bg-gray-50 border rounded-lg">
+                    <p className="font-semibold">{item.productName}</p>
+                    <p className="text-sm">Date: {item.purchaseDate}</p>
+                    <p className="text-sm">Qty: {item.quantity}</p>
+                    <p className="text-sm">Price: ₹ {item.thresholdPrice}</p>
                   </div>
                 ))}
               </div>
@@ -312,6 +309,7 @@ const SupplierPage: React.FC = () => {
             >
               Close
             </button>
+
           </div>
         </div>
       )}
