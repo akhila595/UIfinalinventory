@@ -163,12 +163,12 @@ export default function LoginPage({ onLogin }: Props) {
         </form>
 
         <div className="flex justify-between items-center mt-6 text-sm text-gray-300">
-          <button
+         {/*  <button
             onClick={() => setView("register")}
             className="hover:text-blue-300 font-medium transition"
           >
             Create Account
-          </button>
+          </button>*/}
           <button
             onClick={() => setView("forgot")}
             className="hover:text-blue-300 font-medium transition"
