@@ -37,12 +37,12 @@ const SuperAdminLoginPage: React.FC = () => {
         JSON.stringify({
           name: response.name,
           email: response.email,
-          roleNames: response.roles, // unified with normal user login
+          roles: response.roles, // unified with normal user login
         })
       );
 
       // Redirect based on role
-      if (response.roles.includes("SUPER_ADMIN")) {
+      if (response.roles.includes("SUPERADMIN")) {
         navigate("/superadmin/dashboard");
       } else {
         navigate("/app/dashboard");

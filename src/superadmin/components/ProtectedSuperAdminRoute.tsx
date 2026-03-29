@@ -19,13 +19,13 @@ export default function ProtectedSuperAdminRoute({ children }: Props) {
   if (!token) return <Navigate to="/admin" replace />;
 
   // No user stored
-  if (!user || !user.roleNames) return <Navigate to="/admin" replace />;
+  if (!user || !user.roles) return <Navigate to="/admin" replace />;
 
   // Must be valid array
-  if (!Array.isArray(user.roleNames)) return <Navigate to="/admin" replace />;
+  if (!Array.isArray(user.roles)) return <Navigate to="/admin" replace />;
 
   // Must have SUPER_ADMIN role
-  if (!user.roleNames.includes("SUPER_ADMIN"))
+  if (!user.roles.includes("SUPERADMIN"))
     return <Navigate to="/app/dashboard" replace />;
 
   return <>{children}</>;
