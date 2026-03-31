@@ -29,6 +29,13 @@ const ProductForm: React.FC<ProductFormProps> = ({
   const [attributes, setAttributes] = useState<any[]>([]);
   const [uploading, setUploading] = useState(false);
 
+  // ✅ Check if required fields are filled
+  const isFormValid =
+    formData.name &&
+    formData.brandId &&
+    formData.categoryId &&
+    formData.imageUrl;
+
   // ✅ Load master data
   useEffect(() => {
     fetchMeta();
@@ -122,12 +129,16 @@ const ProductForm: React.FC<ProductFormProps> = ({
       onCancel={onClose}
       onOk={handleSave}
       okText="Save Product"
+      okButtonProps={{ disabled: !isFormValid }}   // ✅ Disable button until valid
       width={700}
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        
         {/* Product Name */}
         <div className="md:col-span-2">
-          <label className="text-sm font-medium">Product Name</label>
+          <label className="text-sm font-medium">
+            Product Name <span className="text-red-500">*</span>
+          </label>
           <input
             className="w-full border rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-indigo-400 outline-none"
             placeholder="Enter product name"
@@ -140,7 +151,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         {/* Brand */}
         <div>
-          <label className="text-sm font-medium">Brand</label>
+          <label className="text-sm font-medium">
+            Brand <span className="text-red-500">*</span>
+          </label>
           <Select
             placeholder="Select Brand"
             className="w-full mt-1"
@@ -157,7 +170,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         {/* Category */}
         <div>
-          <label className="text-sm font-medium">Category</label>
+          <label className="text-sm font-medium">
+            Category <span className="text-red-500">*</span>
+          </label>
           <Select
             placeholder="Select Category"
             className="w-full mt-1"
@@ -194,7 +209,9 @@ const ProductForm: React.FC<ProductFormProps> = ({
 
         {/* Image Upload */}
         <div className="md:col-span-2">
-          <label className="text-sm font-medium">Product Image</label>
+          <label className="text-sm font-medium">
+            Product Image <span className="text-red-500">*</span>
+          </label>
 
           <Upload beforeUpload={handleUpload} showUploadList={false}>
             <button
@@ -217,6 +234,7 @@ const ProductForm: React.FC<ProductFormProps> = ({
             />
           )}
         </div>
+
       </div>
     </Modal>
   );

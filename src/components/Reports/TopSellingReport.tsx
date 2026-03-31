@@ -41,7 +41,7 @@ const TopSellingReport: React.FC = () => {
       render: (url: string) =>
         url ? (
           <img
-            src={url}
+           src={`${import.meta.env.VITE_API_BASE_URL}${url}`}
             alt="product"
             className="w-10 h-10 object-cover rounded"
           />

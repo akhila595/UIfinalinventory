@@ -8,7 +8,7 @@ import {
   updateSupplier,
   deleteSupplier,
 } from "@/api/supplierApi";
-import { getPurchaseReport } from "@/api/reportApi";
+import { getPurchaseRecordsbySupplierId } from "@/api/reportApi";
 
 const SupplierPage: React.FC = () => {
   const [suppliers, setSuppliers] = useState<any[]>([]);
@@ -136,33 +136,32 @@ const SupplierPage: React.FC = () => {
       message.error("Failed to delete supplier");
     }
   };
+const openHistory = async (supplier: any) => {
+  setSelectedSupplier(supplier);
+  setHistoryOpen(true);
+  setHistoryLoading(true);
 
-  const openHistory = async (supplier: any) => {
-    setSelectedSupplier(supplier);
-    setHistoryOpen(true);
-    setHistoryLoading(true);
+  try {
+    const today = new Date();
+    const endDate = today.toISOString().split("T")[0];
 
-    try {
-      const today = new Date();
-      const endDate = today.toISOString().split("T")[0];
+    const past = new Date();
+    past.setMonth(today.getMonth() - 1);
+    const startDate = past.toISOString().split("T")[0];
 
-      const past = new Date();
-      past.setMonth(today.getMonth() - 1);
-      const startDate = past.toISOString().split("T")[0];
+    const res = await getPurchaseRecordsbySupplierId(
+      supplier.supplierId,
+      startDate,
+      endDate
+    );
 
-      const res = await getPurchaseReport(startDate, endDate);
+    setHistoryData(res);
+  } catch {
+    message.error("Failed to fetch purchase history");
+  }
 
-      const filtered = res.filter(
-        (item: any) => item.supplierId === supplier.supplierId
-      );
-
-      setHistoryData(filtered);
-    } catch {
-      message.error("Failed to fetch purchase history");
-    }
-
-    setHistoryLoading(false);
-  };
+  setHistoryLoading(false);
+};
 
   const columns: any[] = [
     { title: "Name", dataIndex: "supplierName" },

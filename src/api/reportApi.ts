@@ -101,3 +101,19 @@ export const getPurchaseReport = async (startDate: string, endDate: string) => {
 
 export const getAttributesReport = async () =>
   (await axios.get("/api/master/attributes-with-values")).data;
+
+export const getPurchaseRecordsbySupplierId = async (
+  supplierId: number,
+  startDate: string,
+  endDate: string
+) => {
+  const res = await axios.get("/api/reports/purchases-by-supplier", {
+    params: {
+      supplierId,
+      startDate,
+      endDate,
+    },
+  });
+
+  return res.data;
+};

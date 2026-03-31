@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { createUser } from "@/api/SuperadminApi";
 import { CheckCircle, X } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Props {
   roles: { id: number; name: string }[];
@@ -29,12 +30,27 @@ export default function UserCreateForm({ roles, onCancel, onSaved }: Props) {
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (loading) return;
+
     setLoading(true);
 
-    await createUser(form);
+    try {
+      await createUser(form);
 
-    onSaved();
-    setLoading(false);
+      toast.success("User created successfully");
+
+      onSaved();
+    } catch (err: any) {
+      const message =
+    typeof err?.response?.data === "string"
+      ? err.response.data
+      : err?.response?.data?.message || "Something went wrong";
+
+        toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,52 +65,70 @@ export default function UserCreateForm({ roles, onCancel, onSaved }: Props) {
           <X size={22} />
         </button>
 
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">Create User</h2>
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Create User
+        </h2>
 
         <form onSubmit={submit} className="space-y-5">
 
           {/* Name */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Full Name</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Full Name
+            </label>
             <input
               type="text"
               className="w-full p-3 rounded-xl border border-purple-300 bg-white/60 shadow-sm outline-none focus:ring-2 focus:ring-purple-400"
               value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, name: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Email */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Email</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Email
+            </label>
             <input
               type="email"
               className="w-full p-3 rounded-xl border border-purple-300 bg-white/60 shadow-sm outline-none focus:ring-2 focus:ring-purple-400"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, email: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-gray-700 font-medium mb-1">Password</label>
+            <label className="block text-gray-700 font-medium mb-1">
+              Password
+            </label>
             <input
               type="password"
               className="w-full p-3 rounded-xl border border-purple-300 bg-white/60 shadow-sm outline-none focus:ring-2 focus:ring-purple-400"
               value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, password: e.target.value })
+              }
               required
             />
           </div>
 
           {/* Roles */}
           <div>
-            <label className="block text-gray-700 font-medium mb-2">Assign Roles</label>
+            <label className="block text-gray-700 font-medium mb-2">
+              Assign Roles
+            </label>
+
             <div className="grid grid-cols-2 gap-3">
               {roles.map((role) => {
                 const selected = form.roleNames.includes(role.name);
+
                 return (
                   <button
                     type="button"
@@ -108,7 +142,13 @@ export default function UserCreateForm({ roles, onCancel, onSaved }: Props) {
                       }`}
                   >
                     <span>{role.name}</span>
-                    {selected && <CheckCircle size={20} className="text-purple-700" />}
+
+                    {selected && (
+                      <CheckCircle
+                        size={20}
+                        className="text-purple-700"
+                      />
+                    )}
                   </button>
                 );
               })}
@@ -117,10 +157,12 @@ export default function UserCreateForm({ roles, onCancel, onSaved }: Props) {
 
           <button
             type="submit"
-            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg transition"
+            disabled={loading}
+            className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-lg transition disabled:opacity-60"
           >
             {loading ? "Creating..." : "Create User"}
           </button>
+
         </form>
       </div>
     </div>
