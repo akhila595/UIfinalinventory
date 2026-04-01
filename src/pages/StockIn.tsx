@@ -41,13 +41,16 @@ const StockInPage: React.FC = () => {
           >
             <PlusCircle size={18} /> Add New Stock
           </button>
-
+          
+          {/*
           <button
             onClick={() => toast("Excel Upload coming soon")}
             className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md"
           >
             <Upload size={18} /> Upload Excel
           </button>
+        */}
+
         </div>
       </div>
 
