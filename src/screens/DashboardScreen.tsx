@@ -12,7 +12,9 @@ import { getMonthlyReport } from "../api/api";
 import { getTotalProducts } from "../components/productService";
 import { getLowStockList } from "../components/lowStockService";
 import { getTopSellingList } from "../components/topSellingService";
+import { Image } from "react-native";
 
+const BASE_URL_Images = "http://10.0.2.2:8080";
 const screenWidth = Dimensions.get("window").width;
 
 export default function DashboardScreen({ navigation }: any) {
@@ -214,26 +216,28 @@ export default function DashboardScreen({ navigation }: any) {
           <Text style={{ color: "#94a3b8" }}>No data</Text>
         ) : (
           <>
-            {visibleTopSelling.map((item: any, index: number) => (
-              <View key={index} style={styles.topItem}>
-                <View style={styles.imageBox}>
-                  <Text style={{ color: "#94a3b8" }}>
-                    IMG
-                  </Text>
-                </View>
+            {visibleTopSelling.map((item: any, index: number) => {
+              console.log("IMAGE URL:", `${BASE_URL_Images}${item.imageUrl}`);
 
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.productName}>
-                    {item.productName}
-                  </Text>
-                  <Text
-                    style={[styles.qty, { color: "#22c55e" }]}
-                  >
-                    Sold: {item.quantitySold}
-                  </Text>
-                </View>
-              </View>
-            ))}
+            return (
+             <View key={index} style={styles.topItem}>
+              <Image
+               source={{ uri: `${BASE_URL_Images}${item.imageUrl}` }}
+               style={styles.image}
+               />
+
+               <View style={{ flex: 1 }}>
+               <Text style={styles.productName}>
+               {item.productName}
+               </Text>
+
+                <Text style={[styles.qty, { color: "#22c55e" }]}>
+                Sold: {item.quantitySold}
+               </Text>
+               </View>
+               </View>
+               );
+            })}
 
             {topSelling.length > 4 && (
               <TouchableOpacity
@@ -380,6 +384,13 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 12,
+  },
+  image: {
+  width: 45,
+  height: 45,
+  borderRadius: 8,
+  marginRight: 10,
+  backgroundColor: "#1e293b",
   },
   imageBox: {
     width: 45,
