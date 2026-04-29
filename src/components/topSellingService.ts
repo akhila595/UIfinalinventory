@@ -3,16 +3,21 @@ import { getTopSellingProducts } from "../api/api";
 export const getTopSellingList = async () => {
   try {
     const today = new Date();
-    const endDate = today.toISOString().split("T")[0];
 
-    const startDate = new Date();
-    startDate.setDate(today.getDate() - 7); // last 7 days
+    const startDate = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      1
+    );
+
+    const endDate = today;
 
     const start = startDate.toISOString().split("T")[0];
+    const end = endDate.toISOString().split("T")[0];
 
-    const res = await getTopSellingProducts(start, endDate);
+    const res = await getTopSellingProducts(start, end, 5);
 
-    return res;
+    return Array.isArray(res) ? res : [];
   } catch (error) {
     console.error("Top selling error", error);
     return [];

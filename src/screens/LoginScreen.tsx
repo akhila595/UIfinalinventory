@@ -37,6 +37,7 @@ const handleLogin = async () => {
       email: userEmail,
       roles,
       permissions,
+      customerId,
       profileImage,
     } = res.data;
 
@@ -59,7 +60,10 @@ const handleLogin = async () => {
         profileImage,
       })
     );
-
+     await AsyncStorage.setItem(
+      "selectedCustomerId",
+      String(customerId)
+      );
     // ✅ Store permissions separately (optional)
     await AsyncStorage.setItem(
       "permissions",
@@ -128,7 +132,6 @@ const handleLogin = async () => {
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

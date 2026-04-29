@@ -3,9 +3,10 @@ import { getLowStockProducts } from "../api/api";
 export const getLowStockCount = async () => {
   try {
     const res = await getLowStockProducts();
-    return res.length;
+
+    return Array.isArray(res) ? res.length : 0;
   } catch (error) {
-    console.error("Low stock error", error);
+    console.error("Low stock count error", error);
     return 0;
   }
 };
@@ -13,7 +14,8 @@ export const getLowStockCount = async () => {
 export const getLowStockList = async () => {
   try {
     const res = await getLowStockProducts();
-    return res; // full list
+
+    return Array.isArray(res) ? res : [];
   } catch (error) {
     console.error("Low stock list error", error);
     return [];

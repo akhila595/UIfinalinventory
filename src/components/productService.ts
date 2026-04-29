@@ -4,7 +4,8 @@ export const getTotalProducts = async () => {
   try {
     const res = await getAllProducts();
 
-    return res.data.length; // only return count
+    // ✅ res is already array
+    return Array.isArray(res) ? res.length : 0;
   } catch (error) {
     console.error("Error fetching total products", error);
     return 0;

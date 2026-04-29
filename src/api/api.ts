@@ -1,57 +1,52 @@
 import api from "./axios";
 
-interface LoginPayload {
-  email: string;
-  password: string;
-}
+/* ================= AUTH ================= */
 
-interface ForgotPasswordPayload {
-  email: string;
-}
-
-// ✅ Login API
-export const loginUser = (payload: LoginPayload) => {
+export const loginUser = (payload: any) => {
   return api.post("/auth/login", payload);
 };
 
-// ✅ Forgot Password API
-export const forgotPassword = (payload: ForgotPasswordPayload) => {
+export const forgotPassword = (payload: any) => {
   return api.post("/auth/forgot-password", payload);
 };
 
-// ✅ Get logged in user details
 export const getCurrentUser = () => {
   return api.get("/users/me");
 };
-// ---------------- PRODUCTS ----------------
 
-// Get all products
+/* ================= PRODUCTS ================= */
+
 export const getAllProducts = async () => {
-  const res = await api.get("/products");
-  return res.data; // { message, data: [...] }
+  const res = await api.get("/products"); // ✅ FIXED
+  return res.data.data;
 };
 
-// ---------------- REPORTS / DASHBOARD ----------------
+/* ================= REPORTS ================= */
 
-// Get top selling products
 export const getTopSellingProducts = async (
   startDate: string,
-  endDate: string
+  endDate: string,
+  limit = 5
 ) => {
-  const res = await api.get(
-    `/reports/top-selling?startDate=${startDate}&endDate=${endDate}&limit=5`
-  );
-  return res.data; // array
+  const res = await api.get("/reports/top-selling", { // ✅ FIXED
+    params: { startDate, endDate, limit },
+  });
+  return res.data;
 };
 
-// Get low stock products
 export const getLowStockProducts = async () => {
-  const res = await api.get("/reports/low-stock?threshold=10");
-  return res.data; // array
+  const res = await api.get("/reports/low-stock?threshold=10"); // ✅ FIXED
+  return res.data;
 };
 
-// Get daily profit/loss report
 export const getDailyReport = async (date: string) => {
-  const res = await api.get(`/reports/daily?date=${date}`);
-  return res.data; // object
+  const res = await api.get(`/reports/daily?date=${date}`); // ✅ FIXED
+  return res.data;
+};
+
+export const getMonthlyReport = async (year: number, month: number) => {
+  const res = await api.get("/reports/monthly", { // already correct ✅
+    params: { year, month },
+  });
+  return res.data;
 };

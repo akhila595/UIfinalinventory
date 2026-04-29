@@ -1,17 +1,19 @@
-import { getDailyReport } from "../api/api";
+import { getMonthlyReport } from "../api/api";
 
-export const getTodayProfit = async () => {
+export const getMonthlyProfit = async () => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1;
 
-    const res = await getDailyReport(today);
+    const res = await getMonthlyReport(year, month);
 
-    const profit = res.totalProfit || 0;
-    const loss = res.totalLoss || 0;
+    const profit = res?.totalProfit ?? 0;
+    const loss = res?.totalLoss ?? 0;
 
     return profit - loss;
   } catch (error) {
-    console.error("Profit error", error);
+    console.error("Monthly profit error", error);
     return 0;
   }
 };

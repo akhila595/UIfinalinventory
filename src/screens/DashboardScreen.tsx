@@ -4,281 +4,402 @@ import {
   Text,
   StyleSheet,
   ScrollView,
+  Dimensions,
   TouchableOpacity,
-  ActivityIndicator,
 } from "react-native";
+import { PieChart, BarChart } from "react-native-chart-kit";
+import { getMonthlyReport } from "../api/api";
+import { getTotalProducts } from "../components/productService";
+import { getLowStockList } from "../components/lowStockService";
+import { getTopSellingList } from "../components/topSellingService";
 
-import {
-  getAllProducts,
-  getTopSellingProducts,
-  getLowStockProducts,
-  getDailyReport,
-} from "../api/api";
+const screenWidth = Dimensions.get("window").width;
 
-export default function DashboardScreen() {
-  const [loading, setLoading] = useState(true);
-
+export default function DashboardScreen({ navigation }: any) {
+  const [data, setData] = useState<any>(null);
   const [totalProducts, setTotalProducts] = useState(0);
   const [lowStock, setLowStock] = useState<any[]>([]);
   const [topSelling, setTopSelling] = useState<any[]>([]);
-  const [profit, setProfit] = useState(0);
+  const [showAllTop, setShowAllTop] = useState(false); // ✅ FIXED
 
   useEffect(() => {
-    fetchDashboard();
+    fetchData();
   }, []);
 
-  const fetchDashboard = async () => {
+  const fetchData = async () => {
     try {
-      setLoading(true);
+      const now = new Date();
 
-      const today = new Date().toISOString().split("T")[0];
+      const report = await getMonthlyReport(
+        now.getFullYear(),
+        now.getMonth() + 1
+      );
 
-      // last 7 days
-      const endDate = today;
-      const startDateObj = new Date();
-      startDateObj.setDate(startDateObj.getDate() - 7);
-      const startDate = startDateObj.toISOString().split("T")[0];
+      const count = await getTotalProducts();
+      setTotalProducts(count);
 
-      const [productsRes, lowStockRes, topSellingRes, dailyRes] =
-        await Promise.all([
-          getAllProducts(),
-          getLowStockProducts(),
-          getTopSellingProducts(startDate, endDate),
-          getDailyReport(today),
-        ]);
-
-      // Set data
-      setTotalProducts(productsRes.data.length);
-      setLowStock(lowStockRes);
+      const topSellingRes = await getTopSellingList();
       setTopSelling(topSellingRes);
 
-      const profitValue =
-        (dailyRes.totalProfit || 0) - (dailyRes.totalLoss || 0);
+      const lowStockRes = await getLowStockList();
+      setLowStock(lowStockRes);
 
-      setProfit(profitValue);
-    } catch (error) {
-      console.log("Dashboard Error:", error);
-    } finally {
-      setLoading(false);
+      setData({
+        totalSalesQty: report.totalQuantitySold || 0,
+        totalProfit: report.totalProfit || 0,
+        totalLoss: report.totalLoss || 0,
+        salesOverview:
+          report.productSales?.map((p: any) => ({
+            name: p.productName,
+            qty: p.quantity,
+          })) || [],
+      });
+    } catch (e) {
+      console.error(e);
     }
   };
 
-  // 🔄 Loading UI
-  if (loading) {
-    return (
-      <View style={styles.loader}>
-        <ActivityIndicator size="large" color="#3b82f6" />
-        <Text style={{ marginTop: 10 }}>Loading dashboard...</Text>
-      </View>
-    );
+  if (!data) {
+    return <Text style={styles.loading}>Loading...</Text>;
   }
+
+  const total = data.totalProfit + data.totalLoss;
+
+  const profitPercent =
+    total === 0 ? 0 : (data.totalProfit / total) * 100;
+
+  const lossPercent =
+    total === 0 ? 0 : (data.totalLoss / total) * 100;
+
+  const pieData = [
+    {
+      name: `Profit ${profitPercent.toFixed(1)}%`,
+      population: profitPercent,
+      color: "#22c55e",
+      legendFontColor: "#fff",
+      legendFontSize: 12,
+    },
+    {
+      name: `Loss ${lossPercent.toFixed(1)}%`,
+      population: lossPercent === 0 ? 1 : lossPercent,
+      color: lossPercent === 0 ? "#334155" : "#ef4444",
+      legendFontColor: "#fff",
+      legendFontSize: 12,
+    },
+  ];
+
+  const barData = {
+    labels: data.salesOverview.map((i: any) =>
+      i.name.substring(0, 6)
+    ),
+    datasets: [
+      {
+        data: data.salesOverview.map((i: any) => i.qty),
+      },
+    ],
+  };
+
+  const visibleTopSelling = showAllTop
+    ? topSelling
+    : topSelling.slice(0, 4); // ✅ FIXED
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header */}
-      <Text style={styles.header}>Welcome Back 👋</Text>
+      <Text style={styles.title}>Dashboard</Text>
 
-      {/* Cards */}
-      <View style={styles.cardContainer}>
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Total Products</Text>
-          <Text style={styles.cardValue}>{totalProducts}</Text>
-        </View>
-
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Low Stock</Text>
-          <Text style={[styles.cardValue, { color: "#f87171" }]}>
-            {lowStock.length}
-          </Text>
-        </View>
+      {/* 🔷 Cards */}
+      <View style={styles.cardRow}>
+        <Card title="Total Products" value={totalProducts} />
+        <Card title="Sales (This Month)" value={data.totalSalesQty} />
       </View>
 
-      {/* Profit */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Today Profit / Loss</Text>
+      {/* 🔷 Profit vs Loss */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Profit vs Loss</Text>
 
-        <View style={styles.profitBox}>
-          <Text
-            style={[
-              styles.profitValue,
-              { color: profit >= 0 ? "#22c55e" : "#ef4444" },
-            ]}
-          >
-            ₹{profit}
-          </Text>
-
-          <Text style={styles.profitText}>
-            {profit >= 0 ? "Profit Today" : "Loss Today"}
-          </Text>
-        </View>
+        <PieChart
+          data={pieData}
+          width={screenWidth - 32}
+          height={200}
+          chartConfig={chartConfig}
+          accessor="population"
+          backgroundColor="transparent"
+          paddingLeft="10"
+          absolute
+        />
       </View>
 
-      {/* Top Selling */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Selling</Text>
+      {/* 🔷 Sales Overview */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Sales Overview</Text>
 
-        {topSelling.length === 0 ? (
-          <Text style={styles.emptyText}>No data available</Text>
-        ) : (
-          topSelling.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <Text style={styles.itemName}>{item.productName}</Text>
-              <Text style={styles.itemValue}>
-                {item.quantitySold} sold
-              </Text>
-            </View>
-          ))
-        )}
+        <BarChart
+          data={barData}
+          width={screenWidth - 32}
+          height={220}
+          chartConfig={{
+            backgroundGradientFrom: "#0f172a",
+            backgroundGradientTo: "#0f172a",
+            decimalPlaces: 0,
+            color: (opacity = 1) =>
+              `rgba(59,130,246,${opacity})`,
+            labelColor: () => "#cbd5f5",
+            propsForBackgroundLines: {
+              stroke: "#1e293b",
+              strokeDasharray: "",
+            },
+            propsForLabels: {
+              fontSize: 10,
+            },
+            fillShadowGradient: "#3b82f6",
+            fillShadowGradientOpacity: 1,
+          }}
+          fromZero
+          withInnerLines={true}
+          withHorizontalLabels={true}
+          withVerticalLabels={true}
+          showValuesOnTopOfBars
+          style={{
+            borderRadius: 12,
+            marginVertical: 8,
+          }}
+          yAxisLabel=""
+          yAxisSuffix=""
+        />
       </View>
 
-      {/* Low Stock */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Low Stock ⚠️</Text>
+      {/* 🔷 Low Stock */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Low Stock</Text>
 
         {lowStock.length === 0 ? (
-          <Text style={styles.emptyText}>No low stock items</Text>
+          <Text style={{ color: "#94a3b8" }}>
+            No low stock items
+          </Text>
         ) : (
-          lowStock.map((item, index) => (
-            <View key={index} style={styles.listItem}>
-              <Text style={styles.itemName}>{item.productName}</Text>
-              <Text style={[styles.itemValue, { color: "#f87171" }]}>
-                {item.stockQty} left
-              </Text>
+          lowStock.slice(0, 5).map((item: any, index: number) => (
+            <View key={index} style={{ marginBottom: 12 }}>
+              <View style={styles.row}>
+                <Text style={styles.productName}>
+                  {item.productName}
+                </Text>
+                <Text style={styles.qty}>
+                  Remaining: {item.stockQty}
+                </Text>
+              </View>
+
+              <View style={styles.progressBg}>
+                <View
+                  style={[
+                    styles.progressFillLow,
+                    {
+                      width: `${Math.min(
+                        item.stockQty * 10,
+                        100
+                      )}%`,
+                    },
+                  ]}
+                />
+              </View>
             </View>
           ))
         )}
       </View>
 
-      {/* Quick Actions */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Quick Actions</Text>
+      {/* 🔷 Top Selling */}
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Top Selling</Text>
 
-        <View style={styles.buttonRow}>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>+ Add Product</Text>
-          </TouchableOpacity>
+        {topSelling.length === 0 ? (
+          <Text style={{ color: "#94a3b8" }}>No data</Text>
+        ) : (
+          <>
+            {visibleTopSelling.map((item: any, index: number) => (
+              <View key={index} style={styles.topItem}>
+                <View style={styles.imageBox}>
+                  <Text style={{ color: "#94a3b8" }}>
+                    IMG
+                  </Text>
+                </View>
 
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Stock In</Text>
-          </TouchableOpacity>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.productName}>
+                    {item.productName}
+                  </Text>
+                  <Text
+                    style={[styles.qty, { color: "#22c55e" }]}
+                  >
+                    Sold: {item.quantitySold}
+                  </Text>
+                </View>
+              </View>
+            ))}
 
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>Stock Out</Text>
-          </TouchableOpacity>
-        </View>
+            {topSelling.length > 4 && (
+              <TouchableOpacity
+                onPress={() =>
+                  setShowAllTop(!showAllTop)
+                }
+              >
+                <Text style={styles.showAll}>
+                  {showAllTop
+                    ? "Show Less"
+                    : "Show All"}
+                </Text>
+              </TouchableOpacity>
+            )}
+          </>
+        )}
+      </View>
+
+      {/* 🔷 Actions */}
+      <View style={styles.actions}>
+        <ActionBtn
+          title="Add Product"
+          onPress={() => navigation.navigate("AddProduct")}
+        />
+        <ActionBtn
+          title="Stock In"
+          onPress={() => navigation.navigate("StockIn")}
+        />
+        <ActionBtn
+          title="Stock Out"
+          onPress={() => navigation.navigate("StockOut")}
+        />
       </View>
     </ScrollView>
   );
 }
 
+/* 🔷 Card */
+const Card = ({ title, value }: any) => (
+  <View style={styles.cardSmall}>
+    <Text style={styles.cardLabel}>{title}</Text>
+    <Text style={styles.cardValue}>{value}</Text>
+  </View>
+);
+
+/* 🔷 Action Button */
+const ActionBtn = ({ title, onPress }: any) => (
+  <TouchableOpacity style={styles.actionBtn} onPress={onPress}>
+    <Text style={styles.actionText}>{title}</Text>
+  </TouchableOpacity>
+);
+
+/* 🔷 Styles */
 const styles = StyleSheet.create({
+  progressFillTop: {
+    backgroundColor: "#22c55e",
+    height: 6,
+    borderRadius: 10,
+  },
   container: {
     flex: 1,
-    backgroundColor: "#0f172a",
+    backgroundColor: "#020617",
     padding: 16,
   },
-
-  loader: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  header: {
-    fontSize: 26,
-    fontWeight: "bold",
+  loading: {
     color: "#fff",
-    marginBottom: 20,
+    padding: 20,
   },
-
-  cardContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  card: {
-    width: "48%",
-    backgroundColor: "#1e293b",
-    padding: 16,
-    borderRadius: 12,
-  },
-
-  cardTitle: {
-    color: "#94a3b8",
-    fontSize: 14,
-  },
-
-  cardValue: {
+  title: {
     color: "#fff",
     fontSize: 22,
-    fontWeight: "bold",
-    marginTop: 5,
+    marginBottom: 12,
   },
-
-  section: {
-    marginTop: 20,
+  cardRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
   },
-
-  sectionTitle: {
+  cardSmall: {
+    backgroundColor: "#0f172a",
+    padding: 12,
+    borderRadius: 10,
+    width: "48%",
+  },
+  cardLabel: {
+    color: "#94a3b8",
+    fontSize: 12,
+  },
+  cardValue: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    marginTop: 4,
+  },
+  actions: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  actionBtn: {
+    backgroundColor: "#3b82f6",
+    padding: 10,
+    borderRadius: 8,
+    width: "30%",
+    alignItems: "center",
+  },
+  actionText: {
+    color: "#fff",
+    fontSize: 12,
+  },
+  card: {
+    backgroundColor: "#0f172a",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  cardTitle: {
+    color: "#fff",
     marginBottom: 10,
   },
-
-  profitBox: {
-    backgroundColor: "#1e293b",
-    padding: 20,
-    borderRadius: 12,
-    alignItems: "center",
-  },
-
-  profitValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-
-  profitText: {
-    color: "#94a3b8",
-  },
-
-  listItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#1e293b",
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-
-  itemName: {
-    color: "#fff",
-  },
-
-  itemValue: {
-    color: "#38bdf8",
-  },
-
-  emptyText: {
-    color: "#94a3b8",
-  },
-
-  buttonRow: {
+  row: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-
-  button: {
-    backgroundColor: "#3b82f6",
-    padding: 12,
-    borderRadius: 10,
-    flex: 1,
-    marginHorizontal: 4,
-    alignItems: "center",
-  },
-
-  buttonText: {
+  productName: {
     color: "#fff",
-    fontWeight: "bold",
+    fontSize: 14,
+  },
+  qty: {
+    color: "#94a3b8",
+    fontSize: 12,
+  },
+  progressBg: {
+    backgroundColor: "#334155",
+    height: 6,
+    borderRadius: 10,
+    marginTop: 5,
+  },
+  progressFillLow: {
+    backgroundColor: "#ef4444",
+    height: 6,
+    borderRadius: 10,
+  },
+  topItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  imageBox: {
+    width: 45,
+    height: 45,
+    borderRadius: 8,
+    backgroundColor: "#1e293b",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 10,
+  },
+  showAll: {
+    color: "#3b82f6",
+    marginTop: 8,
+    fontSize: 12,
   },
 });
+
+const chartConfig = {
+  backgroundGradientFrom: "#0f172a",
+  backgroundGradientTo: "#0f172a",
+  color: () => "#3b82f6",
+  labelColor: () => "#94a3b8",
+};
