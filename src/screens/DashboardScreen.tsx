@@ -272,7 +272,7 @@ export default function DashboardScreen({ navigation }: any) {
       <View style={styles.actions}>
         <ActionBtn
           title="Add Product"
-          onPress={() => navigation.navigate("AddProduct")}
+          onPress={() => navigation.navigate("ProductList")}
         />
         <ActionBtn
           title="Stock In"
