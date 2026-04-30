@@ -171,42 +171,57 @@ export default function DashboardScreen({ navigation }: any) {
       </View>
 
       {/* 🔷 Low Stock */}
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Low Stock</Text>
+        <View style={styles.card}>
+          <       Text style={styles.cardTitle}>Low Stock</Text>
 
-        {lowStock.length === 0 ? (
+           {lowStock.length === 0 ? (
           <Text style={{ color: "#94a3b8" }}>
-            No low stock items
-          </Text>
-        ) : (
-          lowStock.slice(0, 5).map((item: any, index: number) => (
+           No low stock items
+           </Text>
+           ) : (
+           <>
+         {lowStock.slice(0, 2).map((item: any, index: number) => (
             <View key={index} style={{ marginBottom: 12 }}>
-              <View style={styles.row}>
-                <Text style={styles.productName}>
-                  {item.productName}
-                </Text>
-                <Text style={styles.qty}>
-                  Remaining: {item.stockQty}
-                </Text>
-              </View>
+             <View style={styles.row}>
+             <Text style={styles.productName}>
+              {item.productName}
+              </Text>
+             <Text style={styles.qty}>
+              Remaining: {item.stockQty}
+             </Text>
+             </View>
 
-              <View style={styles.progressBg}>
-                <View
+               <View style={styles.progressBg}>
+                 <View
                   style={[
-                    styles.progressFillLow,
-                    {
-                      width: `${Math.min(
-                        item.stockQty * 10,
-                        100
-                      )}%`,
-                    },
-                  ]}
-                />
-              </View>
-            </View>
-          ))
-        )}
-      </View>
+                   styles.progressFillLow,
+                   {
+                  width: `${Math.min(
+                    item.stockQty * 10,
+                    100
+                  )}%`,
+                },
+              ]}
+            />
+          </View>
+        </View>
+      ))}
+
+      {/* ✅ View All button */}
+      {lowStock.length > 2 && (
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate("LowStockScreen", {
+              data: lowStock,
+            })
+          }
+        >
+          <Text style={styles.showAll}>View All →</Text>
+        </TouchableOpacity>
+      )}
+    </>
+  )}
+</View>
 
       {/* 🔷 Top Selling */}
       <View style={styles.card}>
@@ -217,7 +232,6 @@ export default function DashboardScreen({ navigation }: any) {
         ) : (
           <>
             {visibleTopSelling.map((item: any, index: number) => {
-              console.log("IMAGE URL:", `${BASE_URL_Images}${item.imageUrl}`);
 
             return (
              <View key={index} style={styles.topItem}>
@@ -241,15 +255,13 @@ export default function DashboardScreen({ navigation }: any) {
 
             {topSelling.length > 4 && (
               <TouchableOpacity
-                onPress={() =>
-                  setShowAllTop(!showAllTop)
-                }
-              >
-                <Text style={styles.showAll}>
-                  {showAllTop
-                    ? "Show Less"
-                    : "Show All"}
-                </Text>
+                 onPress={() =>
+                   navigation.navigate("TopSellingScreen", {
+                   data: topSelling,
+                  })
+                  }
+                 >
+                 <Text style={styles.showAll}>View All →</Text>
               </TouchableOpacity>
             )}
           </>

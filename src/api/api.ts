@@ -26,7 +26,7 @@ export const getAllProducts = async () => {
 export const getTopSellingProducts = async (
   startDate: string,
   endDate: string,
-  limit = 5
+  limit = 10
 ) => {
   const res = await api.get("/reports/top-selling", { // ✅ FIXED
     params: { startDate, endDate, limit },
@@ -35,7 +35,7 @@ export const getTopSellingProducts = async (
 };
 
 export const getLowStockProducts = async () => {
-  const res = await api.get("/reports/low-stock?threshold=10"); // ✅ FIXED
+  const res = await api.get("/reports/low-stock?threshold=100"); // ✅ FIXED
   return res.data;
 };
 

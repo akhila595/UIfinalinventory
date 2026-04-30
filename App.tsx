@@ -6,6 +6,8 @@ import LoginScreen from "./src/screens/LoginScreen";
 import DashboardScreen from "./src/screens/DashboardScreen";
 import ForgotPasswordScreen from "./src/screens/ForgotPasswordScreen";
 import TopSellingScreen from "./src/screens/TopSellingScreen"
+import LowStockScreen from "./src/screens/LowStockScreen"
+
 
 const Stack = createNativeStackNavigator();
 
@@ -20,6 +22,8 @@ export default function App() {
         <Stack.Screen name="Dashboard" component={DashboardScreen} />
         <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         <Stack.Screen name="TopSellingScreen" component={TopSellingScreen} />
+        <Stack.Screen name="LowStockScreen" component={LowStockScreen}
+/>
       </Stack.Navigator>
     </NavigationContainer>
   );

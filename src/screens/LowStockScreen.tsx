@@ -4,31 +4,23 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
 } from "react-native";
 
-const BASE_URL = "http://10.0.2.2:8080";
-
-export default function TopSellingScreen({ route }: any) {
+export default function LowStockScreen({ route }: any) {
   const { data } = route.params;
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Top Selling Products</Text>
+      <Text style={styles.title}>Low Stock Products</Text>
 
       {data.map((item: any, index: number) => (
         <View key={index} style={styles.item}>
-          <Image
-            source={{ uri: `${BASE_URL}${item.imageUrl}` }}
-            style={styles.image}
-          />
-
           <View style={{ flex: 1 }}>
             <Text style={styles.name}>
               {item.productName}
             </Text>
             <Text style={styles.qty}>
-              Sold: {item.quantitySold}
+              Remaining: {item.stockQty}
             </Text>
           </View>
         </View>
@@ -49,22 +41,16 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   item: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 14,
-  },
-  image: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#1e293b",
   },
   name: {
     color: "#fff",
     fontSize: 14,
   },
   qty: {
-    color: "#22c55e",
+    color: "#ef4444",
     fontSize: 12,
   },
 });
