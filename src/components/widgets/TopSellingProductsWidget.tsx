@@ -38,34 +38,43 @@ const TopSellingProductsWidget: React.FC<TopSellingProductsWidgetProps> = ({
   const generateDateRange = (type: string) => {
     const today = new Date();
     let start: string, end: string;
-
+    const formatDate = (date: Date) => {
+    return date.toLocaleDateString("en-CA"); // YYYY-MM-DD ✅
+    };
     switch (type) {
       case "daily":
-        start = end = today.toISOString().split("T")[0];
-        break;
+       start = end = formatDate(today);
+      break;
+
       case "weekly":
-        const weekStart = new Date(today);
-        weekStart.setDate(today.getDate() - 6);
-        start = weekStart.toISOString().split("T")[0];
-        end = today.toISOString().split("T")[0];
-        break;
+       const weekStart = new Date(today);
+       weekStart.setDate(today.getDate() - 6);
+
+       start = formatDate(weekStart);
+       end = formatDate(today);
+      break;
+
       case "monthly":
         const y = today.getFullYear();
         const m = today.getMonth();
-        start = new Date(y, m, 1).toISOString().split("T")[0];
-        end = new Date(y, m + 1, 0).toISOString().split("T")[0];
-        break;
+
+        start = formatDate(new Date(y, m, 1));
+        end = formatDate(new Date(y, m + 1, 0));
+      break;
+ 
       case "yearly":
         const year = today.getFullYear();
-        start = new Date(year, 0, 1).toISOString().split("T")[0];
-        end = new Date(year, 11, 31).toISOString().split("T")[0];
-        break;
+
+        start = formatDate(new Date(year, 0, 1));
+        end = formatDate(new Date(year, 11, 31));
+      break;
+
       case "custom":
-        start = startDate;
-        end = endDate;
-        break;
+       start = startDate;
+       end = endDate;
+      break;
       default:
-        start = end = today.toISOString().split("T")[0];
+        start = end = formatDate(today);
     }
     return { start, end };
   };
