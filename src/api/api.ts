@@ -82,12 +82,36 @@ export const getAttributes = async () => {
 
 export const uploadProductImage = async (formData: any) => {
   const res = await api.post(
-    "/api/products/uploads/temp-image",
+    "/products/uploads/temp-image",
     formData,
     {
       headers: { "Content-Type": "multipart/form-data" },
     }
   );
 
+  return res.data;
+};
+
+export const getProductAttributes = async (productId: number) => {
+  const res = await api.get(
+    `/product-attributes/product/${productId}`
+  );
+  return res.data;
+};
+
+export const getAttributeValues = async (attributeId: number) => {
+  const res = await api.get(
+    `/attribute-values/attribute/${attributeId}`
+  );
+  return res.data;
+};
+
+export const stockIn = async (data: any) => {
+  const res = await api.post("/stock", data);
+  return res.data;
+};
+
+export const getRecentStockIns = async () => {
+  const res = await api.get("/stock/recent-ins");
   return res.data;
 };

@@ -22,7 +22,7 @@ export default function DashboardScreen({ navigation }: any) {
   const [totalProducts, setTotalProducts] = useState(0);
   const [lowStock, setLowStock] = useState<any[]>([]);
   const [topSelling, setTopSelling] = useState<any[]>([]);
-  const [showAllTop, setShowAllTop] = useState(false); // ✅ FIXED
+  const [showAllTop, setShowAllTop] = useState(false); 
 
   useEffect(() => {
     fetchData();
@@ -276,7 +276,7 @@ export default function DashboardScreen({ navigation }: any) {
         />
         <ActionBtn
           title="Stock In"
-          onPress={() => navigation.navigate("StockIn")}
+          onPress={() => navigation.navigate("StockList")}
         />
         <ActionBtn
           title="Stock Out"
