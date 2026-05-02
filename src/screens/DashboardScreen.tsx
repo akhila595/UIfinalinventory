@@ -105,10 +105,19 @@ export default function DashboardScreen({ navigation }: any) {
     ? topSelling
     : topSelling.slice(0, 4); // ✅ FIXED
 
-  return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Dashboard</Text>
+     return (
+       <ScrollView style={styles.container}>
+         <Text style={styles.title}>Dashboard</Text>
+          <View style={styles.headerRow}>
+         <Text style={styles.title}>Dashboard</Text>
 
+         <TouchableOpacity
+            onPress={() => navigation.navigate("Profile")}
+            style={styles.profileBtn}
+          >
+          <Text style={styles.profileText}>👤</Text>
+          </TouchableOpacity>
+         </View>
       {/* 🔷 Cards */}
       <View style={styles.cardRow}>
         <Card title="Total Products" value={totalProducts} />
@@ -280,7 +289,7 @@ export default function DashboardScreen({ navigation }: any) {
         />
         <ActionBtn
           title="Stock Out"
-          onPress={() => navigation.navigate("StockOut")}
+          onPress={() => navigation.navigate("StockOutList")}
         />
       </View>
     </ScrollView>
@@ -412,6 +421,22 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     marginRight: 10,
+  },
+  headerRow: {
+  flexDirection: "row",
+  justifyContent: "space-between",
+  alignItems: "center",
+  marginBottom: 16,
+},
+
+  profileBtn: {
+   backgroundColor: "#1e293b",
+   padding: 10,
+   borderRadius: 20,
+  },
+
+  profileText: {
+   fontSize: 18,
   },
   showAll: {
     color: "#3b82f6",

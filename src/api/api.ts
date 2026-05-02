@@ -115,3 +115,18 @@ export const getRecentStockIns = async () => {
   const res = await api.get("/stock/recent-ins");
   return res.data;
 };
+
+export const getRecentStockOuts = async () => {
+  const res = await api.get("/stock/recent-outs");
+  return res.data;
+};
+
+export const getVariantsByProduct = async (productId: number) => {
+  const res = await api.get(`/products/variants/${productId}`);
+  return res.data;
+};
+
+export const stockOut = async (data: any) => {
+  const res = await api.post("/stock/out", data);
+  return res.data;
+};

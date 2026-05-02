@@ -11,6 +11,9 @@ import ProductListScreen from "./src/screens/ProductListScreen"
 import AddProductScreen from "./src/screens/AddProductScreen"
 import StockInScreen from "./src/screens/StockInScreen"
 import StockListScreen from "./src/screens/StockListScreen"
+import StockOutListScreen from "./src/screens/StockOutListScreen"
+import StockOutScreen from "./src/screens/StockOutScreen"
+import ProfileScreen from "./src/screens/ProfileScreen"
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +33,10 @@ export default function App() {
         <Stack.Screen name="AddProduct" component={AddProductScreen} />
         <Stack.Screen name="StockList" component={StockListScreen} />
         <Stack.Screen name="StockIn" component={StockInScreen} />
+        <Stack.Screen name="StockOutList" component={StockOutListScreen} />
+        <Stack.Screen name="StockOut" component={StockOutScreen} />
+        <Stack.Screen name="Profile" component={ProfileScreen} />
+
       </Stack.Navigator>
     </NavigationContainer>
   );
